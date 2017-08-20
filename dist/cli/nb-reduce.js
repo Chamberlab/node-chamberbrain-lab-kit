@@ -1,0 +1,27 @@
+#!/usr/bin/env node --harmony
+'use strict';
+
+var yargs = require('yargs') // eslint-disable-line
+.command(['fps', '*'], 'Reduce FPS rate of an LMDB db and output as LMDB and HDF5', function () {}, function (argv) {
+  process.env.IN_FILE = argv.infile;
+  process.env.OUT_FILE = argv.outfile;
+  process.env.FPS = argv.fps;
+  process.env.DEBUG_MODE = argv.debug;
+  require('../nanobrains/reduce');
+}).option('infile', {
+  alias: 'i',
+  describe: 'LMDB input file',
+  required: true
+}).option('outfile', {
+  alias: 'o',
+  describe: 'LMDB output file, also used for HDF5',
+  required: true
+}).option('fps', {
+  alias: 'f',
+  describe: 'Target frames per second',
+  default: '100.0',
+  required: true
+}).option('debug', {
+  alias: 'd',
+  default: false
+}).help().argv;
