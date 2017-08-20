@@ -22,6 +22,7 @@ var infile = path.resolve(process.env.IN_FILE),
     outfile = path.resolve(process.env.OUT_FILE),
     basename = path.basename(outfile, path.extname(outfile)),
     fps = process.env.FPS ? Big(process.env.FPS) : Big('100.0'),
+    debug = process.env.DEBUG_MODE,
     spinner = new CLI.Spinner('Reducing...'),
     lmdb = new LMDB(),
     lmdbOut = new LMDB();
@@ -45,7 +46,7 @@ var _loop = function _loop(id) {
       max = void 0,
       millis = 0;
   lmdb.initCursor(txnRead, id);
-  if (!process.env.DEBUG_MODE) {
+  if (!debug) {
     spinner.start();
   }
 

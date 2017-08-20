@@ -31,7 +31,7 @@ npm install -g https://github.com/chamberlab/node-chamberbrain-lab-kit.git
 ### Convert
 
 ```bash
-blob:dataconvert anton$ nb-convert --help
+blob:node-chamberbrain-lab-kit anton$ nb-convert --help
 Commands:
   csv2lmdb  Convert NanoBrains CSV to LMDB                             [default]
   csv2hdf5  Convert NanoBrains CSV to HDF5
@@ -40,7 +40,7 @@ Options:
   --infile, -i  CSV input file                                        [required]
   --outdir, -o  LMDB output directory                                 [required]
   --type, -t    Value type to be stored
-                 [required] [choices: "Float64", "Float32"] [default: "Float64"]
+                            [choices: "Float64", "Float32"] [default: "Float64"]
   --help        Show help                                              [boolean]
   --debug, -d                                                   [default: false]
 ```
@@ -49,20 +49,21 @@ Options:
 ```bash
 # Convert CSV to LMDB as Float32.
 
-blob:dataconvert anton$ nb-convert -i /Users/foo/goo.csv -o /Users/foo -t Float32 csv2lmdb
+blob:dataconvert anton$ nb-convert -i /Users/foo/goo.csv -o /Users/foo \
+> -t Float32 csv2lmdb
 ```
 
 ### Reduce
 
 ```bash
-blob:dataconvert anton$ nb-reduce --help
+blob:node-chamberbrain-lab-kit anton$ nb-reduce --help
 Commands:
   fps  Reduce FPS rate of an LMDB db and output as LMDB and HDF5       [default]
 
 Options:
   --infile, -i   LMDB input file                                      [required]
   --outfile, -o  LMDB output file, also used for HDF5                 [required]
-  --fps, -f      Target frames per second          [required] [default: "100.0"]
+  --fps, -f      Target frames per second                     [default: "100.0"]
   --help         Show help                                             [boolean]
   --debug, -d                                                   [default: false]
 ```
@@ -71,7 +72,8 @@ Options:
 ```bash
 # Reduce LMDB to 50 frames per second.
 
-blob:dataconvert anton$ nb-reduce -i /Users/foo/goo.lmdb -o /Users/foo/goo-50fps.lmdb -f 50.0
+blob:dataconvert anton$ nb-reduce -i /Users/foo/goo.lmdb \
+> -o /Users/foo/goo-50fps.lmdb -f 50.0
 ```
 
 ### Playback
@@ -79,7 +81,7 @@ blob:dataconvert anton$ nb-reduce -i /Users/foo/goo.lmdb -o /Users/foo/goo-50fps
 :zap: Broadcast can be activated using a remote IP like ``192.168.0.255:9999``.
 
 ```bash
-blob:dataconvert anton$ nb-playback --help
+blob:node-chamberbrain-lab-kit anton$ nb-playback --help
 Commands:
   lmdb2osc  Realtime playback of an LMDB file as OSC packets           [default]
 
@@ -90,14 +92,16 @@ Options:
   --remote, -r   Remote OSC address to send to       [default: "127.0.0.1:9999"]
   --address, -a  Override default OSC address
   --help         Show help                                             [boolean]
+  --debug, -d                                                   [default: false]
 ```
 
 #### Example
 ```bash
 # Play back LMDB with 50 frames per second.
-# Bind to 0.0.0.0:7878 and send OSC packets to broadcast address 192.168.0.255:7777.
+# Bind to 0.0.0.0:7878 and broadcast OSC packets to 192.168.0.255:7777.
 
-blob:dataconvert anton$ nb-playback -i /Users/foo/goo.lmdb -f 50.0 -l 0.0.0.0:7878 -r 192.168.0.255:7777
+blob:dataconvert anton$ nb-playback -i /Users/foo/goo.lmdb \
+> -f 50.0 -l 0.0.0.0:7878 -r 192.168.0.255:7777
 ```
 
 ## Credits

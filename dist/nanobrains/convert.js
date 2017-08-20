@@ -14,8 +14,9 @@ var spinner = void 0;
 var infile = path.resolve(process.env.IN_FILE),
     outdir = process.env.OUT_DIR ? path.resolve(process.env.OUT_DIR) : path.dirname(infile),
     outType = process.env.OUT_TYPE || 'lmdb',
+    debug = process.env.DEBUG_MODE,
     statusHandler = function statusHandler(status) {
-  if (process.env.DEBUG_MODE) {
+  if (debug) {
     return process.stdout.write(status + '\n');
   }
   if (!spinner) {
