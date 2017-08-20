@@ -11,7 +11,7 @@
   ``xcode-select --install``
 * Node.js v8.4.0 ([Installer](https://nodejs.org/en/download/current/) or [Package Manager](https://nodejs.org/en/download/package-manager/))
 
-:confused: Not sure, but these might be needed, but try installing without them first.
+:confused: Not really sure if these might be needed, so try installing without them first.
 * [Homebrew](https://docs.brew.sh/Installation.html)
 * HDF5 libs  
   ``brew install hdf5``
