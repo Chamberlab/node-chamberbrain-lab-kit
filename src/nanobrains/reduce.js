@@ -10,6 +10,7 @@ const infile = path.resolve(process.env.IN_FILE),
   outfile = path.resolve(process.env.OUT_FILE),
   basename = path.basename(outfile, path.extname(outfile)),
   fps = process.env.FPS ? Big(process.env.FPS) : Big('100.0'),
+  debug = process.env.DEBUG_MODE,
   spinner = new CLI.Spinner('Reducing...'),
   lmdb = new LMDB(),
   lmdbOut = new LMDB()
@@ -30,7 +31,7 @@ for (let id of lmdb.dbIds) {
     interval = Big('1000.0').div(fps)
   let table = false, running = true, max, millis = 0
   lmdb.initCursor(txnRead, id)
-  if (!process.env.DEBUG_MODE) {
+  if (!debug) {
     spinner.start()
   }
 

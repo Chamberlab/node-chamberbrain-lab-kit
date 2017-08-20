@@ -7,9 +7,13 @@ var yargs = require('yargs') // eslint-disable-line
   process.env.FPS = argv.fps;
   process.env.ADDR_LOCAL = argv.local;
   process.env.ADDR_REMOTE = argv.remote;
-  process.env.OSC_ADDRESS = argv.address;
-  process.env.DEBUG_MODE = argv.debug;
-  require('../nanobrains/reduce');
+  if (argv.address) {
+    process.env.OSC_ADDRESS = argv.address;
+  }
+  if (argv.debug) {
+    process.env.DEBUG_MODE = true;
+  }
+  require('../nanobrains/playback');
 }).option('infile', {
   alias: 'i',
   describe: 'LMDB input file',

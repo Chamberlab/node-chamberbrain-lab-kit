@@ -6,7 +6,9 @@ var yargs = require('yargs') // eslint-disable-line
   process.env.IN_FILE = argv.infile;
   process.env.OUT_FILE = argv.outfile;
   process.env.FPS = argv.fps;
-  process.env.DEBUG_MODE = argv.debug;
+  if (argv.debug) {
+    process.env.DEBUG_MODE = true;
+  }
   require('../nanobrains/reduce');
 }).option('infile', {
   alias: 'i',
@@ -19,8 +21,7 @@ var yargs = require('yargs') // eslint-disable-line
 }).option('fps', {
   alias: 'f',
   describe: 'Target frames per second',
-  default: '100.0',
-  required: true
+  default: '100.0'
 }).option('debug', {
   alias: 'd',
   default: false

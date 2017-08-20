@@ -19,8 +19,8 @@ var infile = path.resolve(process.env.IN_FILE),
     local = process.env.ADDR_LOCAL || '0.0.0.0:8888',
     remote = process.env.ADDR_REMOTE || '127.0.0.1:9999',
     broadcast = remote.indexOf('.255:') !== -1,
+    debug = process.env.DEBUG_MODE,
     fps = process.env.FPS ? Big(process.env.FPS) : Big('50.0'),
-    detectSlow = process.env.DEBUG_MODE ? parseInt(process.env.DEBUG_MODE) : 0,
     oscDefaultAddress = process.env.OSC_ADDRESS && process.env.OSC_ADDRESS[0] === '/' ? process.env.OSC_ADDRESS : null,
     osc = new Playback.OSC(local, remote, broadcast),
     spinner = new CLI.Spinner('Sending...'),
@@ -65,15 +65,15 @@ osc.on('ready', function () {
       }
       bundle = Playback.OSC.buildMessage(address, max);
       isBuildingFrame = false;
-      if (detectSlow) {
+      var msg = 'Sending... ' + moment(Math.round(millis)).format('HH:mm:ss:SSS') + ' (Press Ctrl-C to abort)';
+      if (debug) {
         var nowMillis = Big(microtime.nowDouble().toString()).times(Big('1000'));
         frameTime = lastFrame.sub(nowMillis);
         lastFrame = nowMillis;
         slow = frameTime.gt(interval);
-      }
-      var msg = 'Sending... ' + moment(Math.round(millis)).format('HH:mm:ss:SSS');
-      if (detectSlow && slow) {
-        msg += ' SLOW FRAME: ' + frameTime.toFixed(3) + 'ms';
+        if (slow) {
+          msg += ' SLOW FRAME: ' + frameTime.toFixed(3) + 'ms';
+        }
       }
       spinner.message(msg);
     });
@@ -105,7 +105,7 @@ osc.on('ready', function () {
     }
   }
 
-  if (!process.env.DEBUG_MODE) {
+  if (!debug) {
     spinner.start();
   }
 });
