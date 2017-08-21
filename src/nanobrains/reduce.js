@@ -50,6 +50,7 @@ const worker = function (args) {
 
 Promise.map(ltt.in.lmdb.dbIds, function (id) {
   const proc = {
+    seq: new PB.Scheduler(),
     frames: new PB.Frames(),
     stats: new Stats(),
     outId: undefined
