@@ -1,9 +1,9 @@
 # Chamberbrain Lab Kit
 
-> :syringe::wrench::hammer: **contraption** used by 
+> :syringe::wrench::hammer: **contraption** used by
 > [:squirrel:](https://soundcloud.com/kammerorchester)[:shipit:](https://soundcloud.com/antonym)
-> [**Chamberlab**](https://soundcloud.com/chamberlab) to :musical_score: **sonify** and 
-> :tv: **visualise** 
+> [**Chamberlab**](https://soundcloud.com/chamberlab) to :musical_score: **sonify** and
+> :tv: **visualise**
 > [**Nanobrain data**](https://globalyoungacademy.net/the-well-tempered-brain-or-what-thinking-sounds-like). :dizzy:
 
 ![Brrrraiiinnz, pls](https://media.giphy.com/media/l41m04gr7tRet7Uas/giphy.gif)
@@ -20,22 +20,22 @@
 
 ### Dependencies
 
-* **Build tools**  
-  macOS: ``xcode-select --install``  
-  Ubuntu 14.04: ``sudo apt-get install build-essential gcc-4.9 g++-4.9``  
+#### Build tools
+  - macOS: ``xcode-select --install``
+  - Ubuntu 14.04: ``sudo apt-get install build-essential gcc-4.9 g++-4.9``
   
-* **Node.js >= 8.4.0**  
-  Install via 
-  [NVM](https://github.com/creationix/nvm#installation) (recommended),
-  "one-click" [Installer](https://nodejs.org/en/download/current/) or your 
-  favourite choice of 
+#### Node.js >= 8.4.0
+  - [NVM](https://github.com/creationix/nvm#installation) (recommended)
+  - "one-click" [Installer](https://nodejs.org/en/download/current/)
+  - your favourite
   [Package Manager](https://nodejs.org/en/download/package-manager/).
 
-* **HDF5 library** ([more info)](https://www.hdfgroup.org/downloads/hdf5/)  
-  macOS ([Homebrew](https://docs.brew.sh/Installation.html)): 
-  ``brew install hdf5``  
-  Ubuntu: ``sudo apt-get install libhdf5-dev``
-  
+#### HDF5 library
+  - [Official maintainer](https://www.hdfgroup.org/downloads/hdf5/)
+  - macOS ([Homebrew](https://docs.brew.sh/Installation.html)):
+  ``brew install hdf5``
+  - Ubuntu: ``sudo apt-get install libhdf5-dev``
+
 ## Installation
 
 ```shell
@@ -129,9 +129,10 @@ blob:node-chamberbrain-lab-kit anton$ nb-playback -i /Users/foo/goo.lmdb \
 > -f 50.0 -l 0.0.0.0:7878 -r 192.168.0.255:7777
 ```
 
-## :euro: :yen: :dollar: :euro: :yen: :dollar: :euro: :yen: :dollar: Credits
+## :money_with_wings: :euro: :yen: :dollar: :euro: :yen: :dollar: :euro: :yen: :dollar: Credits
 
-2017 :smoking::trollface: of Chamberlab    
+2017 :smoking::trollface: of Chamberlab
+
 Licensed under the :sparkles:
 [Do What The Fuck You Want To Public License](https://github.com/Chamberlab/node-chamberbrain-lab-kit/blob/master/LICENSE) 
 :sparkles:
