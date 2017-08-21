@@ -50,6 +50,7 @@ var Scheduler = function () {
         args[_key - 1] = arguments[_key];
       }
 
+      // Returns microseconds; 'm' for milliseconds
       return this._timer.time(func, !args.length ? '' : args, 'u');
     }
   }]);

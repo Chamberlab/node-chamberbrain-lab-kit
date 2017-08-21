@@ -3,7 +3,11 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.Scheduler = exports.OSC = undefined;
+exports.Scheduler = exports.OSC = exports.Frames = undefined;
+
+var _frames = require('./frames');
+
+var _frames2 = _interopRequireDefault(_frames);
 
 var _osc = require('./osc');
 
@@ -15,5 +19,6 @@ var _scheduler2 = _interopRequireDefault(_scheduler);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+exports.Frames = _frames2.default;
 exports.OSC = _osc2.default;
 exports.Scheduler = _scheduler2.default;

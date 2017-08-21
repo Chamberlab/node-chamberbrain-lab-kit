@@ -13,6 +13,7 @@ class Scheduler {
     this._timer.setTimeout(func, args || '', timeStr, cb)
   }
   duration (func, ...args) {
+    // Returns microseconds; 'm' for milliseconds
     return this._timer.time(func, !args.length ? '' : args, 'u')
   }
 }

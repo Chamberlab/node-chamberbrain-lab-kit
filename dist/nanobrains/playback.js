@@ -10,98 +10,83 @@ require('colors');
 var path = require('path'),
     Debug = require('debug'),
     moment = require('moment'),
-    Big = require('big.js'),
     microtime = require('microtime'),
+    Big = require('big.js'),
     CLI = require('clui'),
-    Playback = require('../playback'),
+    PB = require('../playback'),
     LMDB = require('../output').LMDB;
 
-var lmdb = new LMDB(),
-    osc = new Playback.OSC(process.env.ADDR_LOCAL, process.env.ADDR_REMOTE, process.env.ADDR_REMOTE.indexOf('.255:') !== -1);
+var streams = {},
+    spinner = new CLI.Spinner(),
+    lmdb = new LMDB(),
+    osc = new PB.OSC(process.env.ADDR_LOCAL, process.env.ADDR_REMOTE, process.env.ADDR_REMOTE.indexOf('.255:') !== -1);
 
 lmdb.openEnv(path.resolve(process.env.IN_FILE));
 osc.on('ready', function () {
   Debug('cl:osc')('Ready');
 
-  var spinner = void 0,
-      schedulers = void 0;
-
   var _loop = function _loop(id) {
-    process.stdout.write(('Opening DB ' + id + '...\n').cyan);
-    lmdb.openDb(id);
-
-    Debug('cl:scheduler')('Init');
-    var interpolated = void 0,
-        bundle = void 0,
+    var bundle = void 0,
         millis = void 0,
         slow = void 0,
         busy = void 0,
         frameTime = void 0,
         workTime = void 0;
     var address = process.env.OSC_ADDRESS || '/' + id.split('-')[0],
-        txn = lmdb.beginTxn(true);
-    lmdb.initCursor(txn, id);
+        interval = {
+      micros: Big(1000000).div(Big(process.env.FPS)).round(0),
+      millis: Big(1000).div(Big(process.env.FPS)).round(0)
+    };
 
+    process.stdout.write(('Opening DB ' + id + '...\n').cyan);
     process.stdout.write('Sending packets to osc://' + process.env.ADDR_REMOTE + address + ' ' + ('at ' + Big(process.env.FPS).toFixed(2) + 'fps\n\n').yellow);
+    lmdb.openDb(id);
+    var txn = lmdb.beginTxn(true);
 
-    var scheduler = new Playback.Scheduler(),
-        intervalMicros = Big('1000000').div(Big(process.env.FPS)).round(0),
-        intervalMillis = intervalMicros.div(Big('1000')).round(0);
-
+    Debug('cl:scheduler')('Init');
+    streams[id] = {
+      scheduler: new PB.Scheduler(),
+      frames: new PB.Frames()
+    };
+    lmdb.initCursor(txn, id);
     frameTime = microtime.now();
-    scheduler.interval(intervalMillis + 'm', function () {
+    streams[id].scheduler.interval(interval.micros + 'u', function () {
       if (process.env.DEBUG) {
         Debug('cl:scheduler')('Diff: ' + (microtime.now() - frameTime) + '\u03BCs');
         frameTime = microtime.now();
       }
-      workTime = scheduler.duration(function () {
-        var msg = '',
-            entry = void 0;
-        if (busy) {
-          throw new Error('Scheduler calls overlap!');
-        }
+      workTime = streams[id].scheduler.duration(function () {
+        if (busy) throw new Error('Scheduler calls overlap');
         busy = true;
 
         if (bundle) {
           osc.sendBundle(bundle);
-          msg += 'Sending... ' + moment(Math.round(millis)).format('HH:mm:ss:SSS') + ' (Press Ctrl-C to abort)';
+          var msg = 'Sending... ' + moment(Math.round(millis)).format('HH:mm:ss:SSS') + ' (Ctrl-C to exit)';
           if (process.env.DEBUG && slow) {
-            if (slow) {
-              msg += ' SLOW FRAME: ' + (workTime - intervalMicros) + '\u03BCs over limit';
-            }
+            if (slow) msg += (' SLOW FRAME: ' + (workTime - interval.micros) + '\u03BCs over limit').red;
             Debug('cl:osc')(msg);
-          } else {
-            if (spinner) spinner.message(msg);
-          }
+          } else if (spinner) spinner.message(msg);
         }
 
-        entry = lmdb.getCursorData(txn, id, true);
-        interpolated = entry.data;
+        var entry = lmdb.getCursorData(txn, id, true);
+        streams[id].frames.data = entry.data;
         millis = entry.key;
 
-        while (entry.key.minus(millis).lt(intervalMillis) && entry.key.minus(millis).gte(Big('0.0'))) {
-          entry.data.forEach(function (val, i) {
-            if (interpolated && val > interpolated[i]) interpolated[i] = val;
-          });
+        while (entry.key.minus(millis).lt(interval.millis) && entry.key.minus(millis).gte(Big(0))) {
+          streams[id].frames.interpolate(entry.data, PB.Frames.INTERPOLATE.MAX);
           lmdb.advanceCursor(id);
           entry = lmdb.getCursorData(txn, id, true);
         }
 
-        bundle = Playback.OSC.buildMessage(address, interpolated);
+        bundle = PB.OSC.buildMessage(address, streams[id].frames.data);
         busy = false;
       });
 
       if (process.env.DEBUG) {
         Debug('cl:scheduler')('Work: ' + workTime + '\u03BCs');
-        slow = Big(workTime).gt(intervalMicros);
+        slow = Big(workTime).gt(interval.micros);
       }
     });
-
-    if (!schedulers) {
-      schedulers = [scheduler];
-      return 'continue';
-    }
-    schedulers.push(scheduler);
   };
 
   var _iteratorNormalCompletion = true;
@@ -112,9 +97,7 @@ osc.on('ready', function () {
     for (var _iterator = (0, _getIterator3.default)(lmdb.dbIds), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
       var id = _step.value;
 
-      var _ret = _loop(id);
-
-      if (_ret === 'continue') continue;
+      _loop(id);
     }
   } catch (err) {
     _didIteratorError = true;
@@ -131,10 +114,5 @@ osc.on('ready', function () {
     }
   }
 
-  if (!process.env.DEBUG) {
-    if (!spinner) {
-      spinner = new CLI.Spinner('Sending...');
-    }
-    spinner.start();
-  }
+  if (!process.env.DEBUG) spinner.start();
 });
