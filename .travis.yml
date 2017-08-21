@@ -3,6 +3,8 @@ dist: trusty
 language: node_js
 node_js:
   - "8.4"
+env:
+  - CC=gcc-4.9 && CXX=g++-4.9
 script:
   - npm run build
   - npm test
@@ -11,7 +13,8 @@ addons:
     sources:
       - ubuntu-toolchain-r-test
     packages:
-      - g++
+      - gcc-4.9
+      - g++-4.9
       - gfortran
       - cmake
       - libblas-dev
