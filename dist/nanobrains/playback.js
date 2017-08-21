@@ -8,13 +8,13 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 require('colors');
 var path = require('path'),
-    Debug = require('debug'),
     moment = require('moment'),
     microtime = require('microtime'),
     Big = require('big.js'),
     CLI = require('clui'),
     PB = require('../playback'),
     Stats = require('../stats').default,
+    Logger = require('../logger').default,
     LMDB = require('../output').LMDB;
 
 var streams = {},
@@ -25,10 +25,10 @@ var streams = {},
 
 lmdb.openEnv(path.resolve(process.env.IN_FILE));
 osc.on('ready', function () {
-  Debug('cl:osc')('Ready');
+  Logger.debug('Ready', 'cl:osc');
 
   var _loop = function _loop(id) {
-    Debug('cl:scheduler')('Init');
+    Logger.debug('Init', 'cl:scheduler');
     var bundle = void 0,
         keyMillis = void 0,
         slow = void 0,
@@ -42,15 +42,15 @@ osc.on('ready', function () {
     proc.frames.fps = process.env.FPS;
     streams[id] = proc;
 
-    process.stdout.write(('Opening DB ' + id + '...\n').cyan);
-    process.stdout.write('Sending packets to osc://' + process.env.ADDR_REMOTE + address + ' ' + ('at ' + Big(process.env.FPS).toFixed(2) + 'fps\n\n').yellow);
+    Logger.log(('Opening DB ' + id + '...\n').cyan + ('Sending packets to osc://' + process.env.ADDR_REMOTE + address + ' ') + ('at ' + Big(process.env.FPS).toFixed(2) + 'fps\n\n').yellow);
+
     lmdb.openDb(id);
     var txn = lmdb.beginTxn(true);
     lmdb.initCursor(txn, id);
 
     proc.scheduler.interval(proc.frames.interval.micros + 'u', function () {
       if (process.env.DEBUG) {
-        Debug('cl:scheduler')('Diff: ' + stats.micros + '\u03BCs');
+        Logger.debug('Diff: ' + stats.micros + '\u03BCs', 'cl:scheduler');
         stats.micros = microtime.now();
       }
       workTime = streams[id].scheduler.duration(function () {
@@ -62,7 +62,7 @@ osc.on('ready', function () {
           var msg = 'Sending... ' + moment(Math.round(keyMillis)).format('HH:mm:ss:SSS') + ' (Ctrl-C to exit)';
           if (process.env.DEBUG && slow) {
             if (slow) msg += (' SLOW FRAME: ' + (workTime - proc.frames.interval.micros) + '\u03BCs over limit').red;
-            Debug('cl:osc')(msg);
+            Logger.debug(msg, 'cl:osc');
           } else if (spinner) spinner.message(msg);
         }
 
@@ -83,7 +83,7 @@ osc.on('ready', function () {
       });
 
       if (process.env.DEBUG) {
-        Debug('cl:scheduler')('Work: ' + workTime + '\u03BCs');
+        Logger.debug('Work: ' + workTime + '\u03BCs', 'cl:scheduler');
         slow = Big(workTime).gt(proc.frames.interval.micros);
       }
     });

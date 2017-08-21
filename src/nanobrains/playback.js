@@ -1,12 +1,12 @@
 require('colors')
 const path = require('path'),
-  Debug = require('debug'),
   moment = require('moment'),
   microtime = require('microtime'),
   Big = require('big.js'),
   CLI = require('clui'),
   PB = require('../playback'),
   Stats = require('../stats').default,
+  Logger = require('../logger').default,
   LMDB = require('../output').LMDB
 
 const streams = {},
@@ -21,10 +21,10 @@ const streams = {},
 
 lmdb.openEnv(path.resolve(process.env.IN_FILE))
 osc.on('ready', function () {
-  Debug('cl:osc')('Ready')
+  Logger.debug('Ready', 'cl:osc')
 
   for (let id of lmdb.dbIds) {
-    Debug('cl:scheduler')('Init')
+    Logger.debug('Init', 'cl:scheduler')
     let bundle, keyMillis, slow, busy, workTime
     const address = process.env.OSC_ADDRESS || `/${id.split('-')[0]}`,
       proc = {
@@ -34,16 +34,17 @@ osc.on('ready', function () {
     proc.frames.fps = process.env.FPS
     streams[id] = proc
 
-    process.stdout.write(`Opening DB ${id}...\n`.cyan)
-    process.stdout.write(`Sending packets to osc://${process.env.ADDR_REMOTE}${address} ` +
+    Logger.log(`Opening DB ${id}...\n`.cyan +
+      `Sending packets to osc://${process.env.ADDR_REMOTE}${address} ` +
       `at ${Big(process.env.FPS).toFixed(2)}fps\n\n`.yellow)
+
     lmdb.openDb(id)
     const txn = lmdb.beginTxn(true)
     lmdb.initCursor(txn, id)
 
     proc.scheduler.interval(`${proc.frames.interval.micros}u`, function () {
       if (process.env.DEBUG) {
-        Debug('cl:scheduler')(`Diff: ${stats.micros}μs`)
+        Logger.debug(`Diff: ${stats.micros}μs`, 'cl:scheduler')
         stats.micros = microtime.now()
       }
       workTime = streams[id].scheduler.duration(function () {
@@ -55,7 +56,7 @@ osc.on('ready', function () {
           let msg = `Sending... ${moment(Math.round(keyMillis)).format('HH:mm:ss:SSS')} (Ctrl-C to exit)`
           if (process.env.DEBUG && slow) {
             if (slow) msg += ` SLOW FRAME: ${workTime - proc.frames.interval.micros}μs over limit`.red
-            Debug('cl:osc')(msg)
+            Logger.debug(msg, 'cl:osc')
           }
           else if (spinner) spinner.message(msg)
         }
@@ -76,7 +77,7 @@ osc.on('ready', function () {
       })
 
       if (process.env.DEBUG) {
-        Debug('cl:scheduler')(`Work: ${workTime}μs`)
+        Logger.debug(`Work: ${workTime}μs`, 'cl:scheduler')
         slow = Big(workTime).gt(proc.frames.interval.micros)
       }
     })
