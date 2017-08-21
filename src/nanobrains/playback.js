@@ -1,7 +1,6 @@
 require('colors')
 const path = require('path'),
   moment = require('moment'),
-  microtime = require('microtime'),
   Big = require('big.js'),
   CLI = require('clui'),
   PB = require('../playback'),
@@ -10,7 +9,6 @@ const path = require('path'),
   LMDB = require('../output').LMDB
 
 const streams = {},
-  stats = new Stats(),
   spinner = new CLI.Spinner(),
   lmdb = new LMDB(),
   osc = new PB.OSC(
@@ -25,16 +23,17 @@ osc.on('ready', function () {
 
   for (let id of lmdb.dbIds) {
     Logger.debug('Init', 'cl:scheduler')
-    let bundle, keyMillis, slow, busy, workTime
+    let bundle, keyMillis, busy
     const address = process.env.OSC_ADDRESS || `/${id.split('-')[0]}`,
       proc = {
-        scheduler: new PB.Scheduler(),
-        frames: new PB.Frames()
+        seq: new PB.Scheduler(),
+        frames: new PB.Frames(),
+        stats: new Stats()
       }
     proc.frames.fps = process.env.FPS
     streams[id] = proc
 
-    Logger.log(`Opening DB ${id}...\n`.cyan +
+    Logger.log(`Reading data from LMDB database ${id}...\n`.cyan +
       `Sending packets to osc://${process.env.ADDR_REMOTE}${address} ` +
       `at ${Big(process.env.FPS).toFixed(2)}fps\n\n`.yellow)
 
@@ -42,22 +41,16 @@ osc.on('ready', function () {
     const txn = lmdb.beginTxn(true)
     lmdb.initCursor(txn, id)
 
-    proc.scheduler.interval(`${proc.frames.interval.micros}u`, function () {
-      if (process.env.DEBUG) {
-        Logger.debug(`Diff: ${stats.micros}μs`, 'cl:scheduler')
-        stats.micros = microtime.now()
-      }
-      workTime = streams[id].scheduler.duration(function () {
+    proc.seq.interval(`${proc.frames.interval.micros}u`, function () {
+      if (process.env.DEBUG) proc.stats.getFrameDiff()
+      proc.stats.workTime = proc.seq.duration(function () {
         if (busy) throw new Error('Scheduler calls overlap')
         busy = true
 
         if (bundle) {
           osc.sendBundle(bundle)
           let msg = `Sending... ${moment(Math.round(keyMillis)).format('HH:mm:ss:SSS')} (Ctrl-C to exit)`
-          if (process.env.DEBUG && slow) {
-            if (slow) msg += ` SLOW FRAME: ${workTime - proc.frames.interval.micros}μs over limit`.red
-            Logger.debug(msg, 'cl:osc')
-          }
+          if (process.env.DEBUG) proc.stats.checkSlowFrame(proc.frames.interval)
           else if (spinner) spinner.message(msg)
         }
 
@@ -77,8 +70,7 @@ osc.on('ready', function () {
       })
 
       if (process.env.DEBUG) {
-        Logger.debug(`Work: ${workTime}μs`, 'cl:scheduler')
-        slow = Big(workTime).gt(proc.frames.interval.micros)
+        Logger.debug(`Work: ${proc.stats.workTime}μs`, 'cl:scheduler')
       }
     })
   }

@@ -30,6 +30,10 @@ var _microtime = require('microtime');
 
 var _microtime2 = _interopRequireDefault(_microtime);
 
+var _logger = require('./logger');
+
+var _logger2 = _interopRequireDefault(_logger);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var Stats = function () {
@@ -39,7 +43,7 @@ var Stats = function () {
     this._entries = 0;
     this._errors = 0;
     this._start = (0, _moment2.default)();
-    this._micros = 0;
+    this._frameTime = 0;
   }
 
   (0, _createClass3.default)(Stats, [{
@@ -76,6 +80,19 @@ var Stats = function () {
       process.stdout.write(stats + '\n');
     }
   }, {
+    key: 'getFrameDiff',
+    value: function getFrameDiff() {
+      _logger2.default.debug('Diff: ' + this.micros + '\u03BCs', 'cl:scheduler');
+      this.micros = _microtime2.default.now();
+    }
+  }, {
+    key: 'checkSlowFrame',
+    value: function checkSlowFrame(interval) {
+      if (this.workTime > interval.micros) {
+        _logger2.default.debug(('SLOW FRAME: ' + (this.workTime - interval.micros) + '\u03BCs` over limit').red, 'cl:osc');
+      }
+    }
+  }, {
     key: 'entries',
     get: function get() {
       return this._entries;
@@ -96,12 +113,20 @@ var Stats = function () {
       return this._start;
     }
   }, {
-    key: 'micros',
+    key: 'frameTime',
     get: function get() {
-      return this._micros ? _microtime2.default.now() - this._micros : 0;
+      return this._frameTime ? _microtime2.default.now() - this._frameTime : 0;
     },
     set: function set(val) {
-      this._micros = val || _microtime2.default.now();
+      this._frameTime = val || _microtime2.default.now();
+    }
+  }, {
+    key: 'workTime',
+    get: function get() {
+      return this._workTime;
+    },
+    set: function set(val) {
+      this._workTime = val;
     }
   }]);
   return Stats;

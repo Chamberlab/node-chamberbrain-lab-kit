@@ -2,13 +2,14 @@ import 'colors'
 import assert from 'assert'
 import moment from 'moment'
 import microtime from 'microtime'
+import Logger from './logger'
 
 class Stats {
   constructor () {
     this._entries = 0
     this._errors = 0
     this._start = moment()
-    this._micros = 0
+    this._frameTime = 0
   }
   addEntries (count = 1) {
     assert.equal(typeof count, 'number')
@@ -33,6 +34,15 @@ class Stats {
     stats += '\n'
     process.stdout.write(stats + '\n')
   }
+  getFrameDiff () {
+    Logger.debug(`Diff: ${this.micros}μs`, 'cl:scheduler')
+    this.micros = microtime.now()
+  }
+  checkSlowFrame (interval) {
+    if (this.workTime > interval.micros) {
+      Logger.debug(`SLOW FRAME: ${this.workTime - interval.micros}μs\` over limit`.red, 'cl:osc')
+    }
+  }
   get entries () {
     return this._entries
   }
@@ -45,11 +55,17 @@ class Stats {
   get start () {
     return this._start
   }
-  get micros () {
-    return this._micros ? microtime.now() - this._micros : 0
+  get frameTime () {
+    return this._frameTime ? microtime.now() - this._frameTime : 0
   }
-  set micros (val) {
-    this._micros = val || microtime.now()
+  set frameTime (val) {
+    this._frameTime = val || microtime.now()
+  }
+  get workTime () {
+    return this._workTime
+  }
+  set workTime (val) {
+    this._workTime = val
   }
 }
 
