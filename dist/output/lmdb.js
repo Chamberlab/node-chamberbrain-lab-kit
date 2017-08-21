@@ -169,8 +169,9 @@ var LMDB = function () {
       _assert2.default.notEqual(typeof txn === 'undefined' ? 'undefined' : (0, _typeof3.default)(txn), 'undefined', msgs.no_txn);
       _assert2.default.notEqual((0, _typeof3.default)(this._meta[dbId].dbi), 'undefined');
       if (!this._meta[dbId].cursor) {
+        var obj = new _nodeLmdb2.default.Cursor(txn, this._meta[dbId].dbi);
         this._meta[dbId].cursor = {
-          obj: new _nodeLmdb2.default.Cursor(txn, this._meta[dbId].dbi),
+          obj: obj,
           key: null,
           nextKey: null
         };
