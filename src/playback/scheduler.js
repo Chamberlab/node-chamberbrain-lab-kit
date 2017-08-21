@@ -12,6 +12,9 @@ class Scheduler {
     this._timer.clearTimeout()
     this._timer.setTimeout(func, args || '', timeStr, cb)
   }
+  duration (func, ...args) {
+    return this._timer.time(func, !args.length ? '' : args, 'u')
+  }
 }
 
 export default Scheduler
