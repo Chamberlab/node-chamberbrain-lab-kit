@@ -129,7 +129,7 @@ blob:node-chamberbrain-lab-kit anton$ nb-playback -i /Users/foo/goo.lmdb \
 > -f 50.0 -l 0.0.0.0:7878 -r 192.168.0.255:7777
 ```
 
-## :money_with_wings: :euro: :yen: :dollar: :euro: :yen: :dollar: :euro: :yen: :dollar: Credits
+## Credits :euro: :yen: :euro: :yen: :euro: :yen: :money_with_wings: !
 
 2017 :smoking::trollface: of Chamberlab
 
