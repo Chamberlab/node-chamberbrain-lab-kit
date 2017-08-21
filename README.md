@@ -4,9 +4,9 @@
 [![Code Climate](https://codeclimate.com/github/Chamberlab/node-chamberbrain-lab-kit/badges/gpa.svg)](https://codeclimate.com/github/Chamberlab/node-chamberbrain-lab-kit)
 [![Build Status](https://travis-ci.org/Chamberlab/node-chamberbrain-lab-kit.svg?branch=master)](https://travis-ci.org/Chamberlab/node-chamberbrain-lab-kit)
 
-![Brrrraiiinnz, pls!](https://media.giphy.com/media/l41m04gr7tRet7Uas/giphy.gif)
-
 > :syringe::wrench::hammer: **contraption** used by [:squirrel:](https://soundcloud.com/kammerorchester)[:shipit:](https://soundcloud.com/antonym) [**Chamberlab**](https://soundcloud.com/chamberlab) to :musical_score: **sonify** and :tv: **visualise** [**Nanobrain data**](https://globalyoungacademy.net/the-well-tempered-brain-or-what-thinking-sounds-like). :dizzy:
+
+![Brrrraiiinnz, pls](https://media.giphy.com/media/l41m04gr7tRet7Uas/giphy.gif)
 
 ## Requirements
 
