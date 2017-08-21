@@ -1,114 +1,73 @@
 require('colors')
 const path = require('path'),
+  moment = require('moment'),
+  Promise = require('bluebird'),
   Big = require('big.js'),
   CLI = require('clui'),
-  LMDB = require('../output').LMDB,
-  HDF5 = require('../output').HDF5,
-  Stats = require('../stats').default
+  PB = require('../playback'),
+  Stats = require('../stats').default,
+  Logger = require('../logger').default,
+  LMDBTransferTool = require('../output').LMDBTransferTool
 
-const infile = path.resolve(process.env.IN_FILE),
+const processors = {},
+  infile = path.resolve(process.env.IN_FILE),
   outfile = path.resolve(process.env.OUT_FILE),
-  basename = path.basename(outfile, path.extname(outfile)),
-  fps = process.env.FPS ? Big(process.env.FPS) : Big('100.0'),
-  debug = process.env.DEBUG_MODE,
-  spinner = new CLI.Spinner('Reducing...'),
-  lmdb = new LMDB(),
-  lmdbOut = new LMDB()
+  spinner = new CLI.Spinner(),
+  ltt = new LMDBTransferTool(infile, outfile)
 
-lmdb.openEnv(infile)
-lmdbOut.openEnv(outfile)
+Promise.map(ltt.in.lmdb.dbIds, function (id) {
+  return new Promise(function (resolve) {
+    let keyMillis, isRunning = true
+    const proc = {
+      frames: new PB.Frames(),
+      stats: new Stats(),
+      outId: undefined
+    }
+    ltt.in.lmdb.openDb(id)
+    proc.outId = ltt.out.lmdb.createDb(Object.assign({}, ltt.in.lmdb.meta[id]))
+    proc.frames.fps = process.env.FPS
+    processors[id] = proc
 
-for (let id of lmdb.dbIds) {
-  process.stdout.write(`Opening DB ${id}...\n`.cyan)
-  lmdb.openDb(id)
-  const hdf = HDF5.createFile(path.join(path.dirname(outfile), `${basename}.h5`)),
-    hdfgroup = HDF5.createGroup(hdf, id)
-  hdfgroup.title = basename
-  hdfgroup.flush()
-  const outId = lmdbOut.createDb(Object.assign({}, lmdb.meta[id]))
-  const txnRead = lmdb.beginTxn(true),
-    txnWrite = lmdbOut.beginTxn(),
-    interval = Big('1000.0').div(fps)
-  let table = false, running = true, max, millis = 0
-  lmdb.initCursor(txnRead, id)
-  if (!debug) {
-    spinner.start()
-  }
+    ltt.in.lmdb.initCursor(ltt.in.txn, id)
+    const worker = function (args) {
+      const [lmdb, proc] = args
+      proc.stats.workTime = proc.seq.duration(function () {
+        if (spinner) spinner.message(`Sending... ${moment(Math.round(keyMillis)).format('HH:mm:ss:SSS')}`)
 
-  const stats = new Stats(),
-    statsOut = new Stats()
-  while (running) {
-    let key, entry = lmdb.getCursorData(txnRead, id, true)
-    stats.addEntries()
-    if (millis === undefined) {
-      max = entry.data.clone()
-      millis = entry.key
-      key = LMDB.stringKeyFromFloat(millis, lmdb.meta[id].key.length,
-        lmdb.meta[id].key.precision, lmdb.meta[id].key.signed)
-      lmdbOut.put(txnWrite, outId, key, max)
-      const records = lmdb.meta[id].labels.map((label, idx) => {
-        const column = Float64Array.from([max[idx]])
-        column.name = label
-        return column
+        let keyDiff, entry = lmdb.getCursorData(lmdb.in.txn, id, true)
+        keyMillis = entry.key
+        keyDiff = entry.key.minus(keyMillis)
+        proc.frames.data = entry.data
+        while (isRunning && keyDiff.lt(proc.frames.interval.millis) && keyDiff.gte(Big(0))) {
+          if (!keyDiff.gte(0)) isRunning = false
+          proc.frames.interpolate(entry.data, PB.Frames.INTERPOLATE.MAX)
+          lmdb.in.lmdb.advanceCursor(id)
+          entry = lmdb.in.lmdb.getCursorData(lmdb.in.txn, id, true)
+          keyDiff = entry.key.minus(keyMillis)
+        }
+
+        lmdb.addRecord(proc.outId, keyMillis, proc.frames.data)
       })
-      if (table) {
-        HDF5.appendRecords(hdfgroup.id, id, records)
+
+      if (process.env.DEBUG) {
+        Logger.debug(`Work: ${proc.stats.workTime}μs`, 'cl:reduce')
+      }
+
+      if (isRunning) {
+        proc.seq.delay(0, worker, [lmdb, proc])
       }
       else {
-        HDF5.makeTable(hdfgroup.id, id, records)
-        table = true
+        resolve()
       }
-      statsOut.addEntries()
     }
-    max = entry.data
-    millis = entry.key
-    lmdb.advanceCursor(id)
-    entry = lmdb.getCursorData(txnRead, id, true)
-    while (entry.key.minus(millis).lt(interval) && entry.key.minus(millis).gte(Big('0.0'))) {
-      entry.data.forEach((val, i) => {
-        if (max && val > max[i]) max[i] = val
-      })
-      lmdb.advanceCursor(id)
-      entry = lmdb.getCursorData(txnRead, id, true)
-      stats.addEntries()
-    }
-    if (entry.key.minus(millis).lt(Big('0.0'))) {
-      running = false
-    }
-    else {
-      key = LMDB.stringKeyFromFloat(millis, lmdb.meta[id].key.length,
-        lmdb.meta[id].key.precision, lmdb.meta[id].key.signed)
-      lmdbOut.put(txnWrite, outId, key, max)
-      const records = lmdb.meta[id].labels.map((label, idx) => {
-        const column = Float64Array.from([max[idx]])
-        column.name = label
-        return column
-      })
-      if (table) {
-        HDF5.appendRecords(hdfgroup.id, id, records)
-      }
-      else {
-        HDF5.makeTable(hdfgroup.id, id, records)
-        table = true
-      }
-      statsOut.addEntries()
-      lmdb.advanceCursor(id)
-    }
-  }
 
-  spinner.stop()
-
-  process.stdout.write('Closing...'.yellow)
-  lmdbOut.endTxn(txnWrite)
-  lmdbOut.close()
-  hdfgroup.close()
-  hdf.close()
-  lmdb.endTxn(txnRead, false)
+    if (!process.env.DEBUG) spinner.start()
+  })
+}).then(() => {
   lmdb.close()
-  process.stdout.write('Done.\n'.yellow)
-
-  process.stdout.write('\nINPUT'.cyan)
-  stats.print()
-  process.stdout.write('\nOUTPUT'.cyan)
-  statsOut.print()
-}
+  process.exit(0)
+}).catch(err => {
+  Logger.error(err.message)
+  Logger.debug(err.stack, 'cl:reduce')
+  process.exit(err.code)
+})

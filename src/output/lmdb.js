@@ -80,8 +80,9 @@ class LMDB {
     assert.notEqual(typeof txn, 'undefined', msgs.no_txn)
     assert.notEqual(typeof this._meta[dbId].dbi, 'undefined')
     if (!this._meta[dbId].cursor) {
+      const obj = new lmdb.Cursor(txn, this._meta[dbId].dbi)
       this._meta[dbId].cursor = {
-        obj: new lmdb.Cursor(txn, this._meta[dbId].dbi),
+        obj,
         key: null,
         nextKey: null
       }

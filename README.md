@@ -18,15 +18,15 @@ Tested on:
 
 * **Build tools**  
   macOS >= 10.9: ``xcode-select --install``  
-  ubuntu >= 16.04: ``sudo apt-get install build-essential``  
-  ubuntu ~= 14.04: ``sudo apt-get install build-essential gcc-4.9 g++-4.9``  
+  Ubuntu >= 16.04: ``sudo apt-get install build-essential``  
+  Ubuntu ~= 14.04: ``sudo apt-get install build-essential gcc-4.9 g++-4.9``  
   
 * **Node.js >= 8.4.0**  
   Install via [NVM](https://github.com/creationix/nvm#installation) (recommended), "one-click" [Installer](https://nodejs.org/en/download/current/) or your favourite choice of [Package Manager](https://nodejs.org/en/download/package-manager/).
 
 * **HDF5 library** ([more info)](https://www.hdfgroup.org/downloads/hdf5/)  
   macOS via [Homebrew](https://docs.brew.sh/Installation.html): ``brew install hdf5``  
-  ubuntu: ``sudo apt-get install libhdf5-dev``
+  Ubuntu: ``sudo apt-get install libhdf5-dev``
   
 ## Installation
 
