@@ -50,8 +50,9 @@ osc.on('ready', function () {
     process.stdout.write('Sending packets to osc://' + process.env.ADDR_REMOTE + address + ' ' + ('at ' + Big(process.env.FPS).toFixed(2) + 'fps\n\n').yellow);
 
     var scheduler = new Playback.Scheduler(),
-        intervalMillis = Big('1000').div(Big(process.env.FPS)).round(0);
-    scheduler.interval(intervalMillis + 'ms', function () {
+        intervalMicros = Big('1000000').div(Big(process.env.FPS)).round(0),
+        intervalMillis = intervalMicros.div(Big('1000')).round(0);
+    scheduler.interval(intervalMillis + 'm', function () {
       if (process.env.DEBUG) {
         var nowMicros = microtime.now();
         Debug('cl:scheduler')('Diff: ' + (nowMicros - lastFrameTime) + '\u03BCs');
@@ -95,7 +96,7 @@ osc.on('ready', function () {
       if (process.env.DEBUG) {
         var _nowMicros = microtime.now();
         frameTime = _nowMicros - lastFrameTime;
-        slow = Big(frameTime).div(1000).gt(intervalMillis);
+        slow = Big(frameTime).gt(intervalMicros);
         Debug('cl:scheduler')('Work: ' + frameTime + '\u03BCs');
       }
     });
