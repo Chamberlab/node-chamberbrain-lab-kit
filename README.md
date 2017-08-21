@@ -1,6 +1,10 @@
 # Chamberbrain Lab Kit
 
-> :syringe::wrench::hammer: **contraption** used by [:squirrel:](https://soundcloud.com/kammerorchester)[:shipit:](https://soundcloud.com/antonym) [**Chamberlab**](https://soundcloud.com/chamberlab) to :musical_score: **sonify** and :tv: **visualise** [**Nanobrain data**](https://globalyoungacademy.net/the-well-tempered-brain-or-what-thinking-sounds-like). :dizzy:
+> :syringe::wrench::hammer: **contraption** used by 
+> [:squirrel:](https://soundcloud.com/kammerorchester)[:shipit:](https://soundcloud.com/antonym)
+> [**Chamberlab**](https://soundcloud.com/chamberlab) to :musical_score: **sonify** and 
+> :tv: **visualise** 
+> [**Nanobrain data**](https://globalyoungacademy.net/the-well-tempered-brain-or-what-thinking-sounds-like). :dizzy:
 
 ![Brrrraiiinnz, pls](https://media.giphy.com/media/l41m04gr7tRet7Uas/giphy.gif)
 
@@ -21,10 +25,15 @@
   Ubuntu 14.04: ``sudo apt-get install build-essential gcc-4.9 g++-4.9``  
   
 * **Node.js >= 8.4.0**  
-  Install via [NVM](https://github.com/creationix/nvm#installation) (recommended), "one-click" [Installer](https://nodejs.org/en/download/current/) or your favourite choice of [Package Manager](https://nodejs.org/en/download/package-manager/).
+  Install via 
+  [NVM](https://github.com/creationix/nvm#installation) (recommended),
+  "one-click" [Installer](https://nodejs.org/en/download/current/) or your 
+  favourite choice of 
+  [Package Manager](https://nodejs.org/en/download/package-manager/).
 
 * **HDF5 library** ([more info)](https://www.hdfgroup.org/downloads/hdf5/)  
-  macOS via [Homebrew](https://docs.brew.sh/Installation.html): ``brew install hdf5``  
+  macOS ([Homebrew](https://docs.brew.sh/Installation.html)): 
+  ``brew install hdf5``  
   Ubuntu: ``sudo apt-get install libhdf5-dev``
   
 ## Installation
@@ -46,19 +55,20 @@ npm install -g chamberbrain-lab-kit
 ```bash
 blob:node-chamberbrain-lab-kit anton$ nb-convert --help
 Commands:
-  csv2lmdb  Convert NanoBrains CSV to LMDB                             [default]
+  csv2lmdb  Convert NanoBrains CSV to LMDB                            [default]
   csv2hdf5  Convert NanoBrains CSV to HDF5
 
 Options:
-  --infile, -i  CSV input file                                        [required]
-  --outdir, -o  LMDB output directory                                 [required]
+  --infile, -i  CSV input file                                       [required]
+  --outdir, -o  LMDB output directory                                [required]
   --type, -t    Value type to be stored
-                            [choices: "Float64", "Float32"] [default: "Float64"]
-  --help        Show help                                              [boolean]
-  --debug, -d                                                   [default: false]
+                           [choices: "Float64", "Float32"] [default: "Float64"]
+  --help        Show help                                             [boolean]
+  --debug, -d                                                  [default: false]
 ```
 
-#### Example
+#### Example convert
+
 ```bash
 # Convert CSV to LMDB as Float32.
 
@@ -71,17 +81,18 @@ blob:node-chamberbrain-lab-kit anton$ nb-convert -i /Users/foo/goo.csv \
 ```bash
 blob:node-chamberbrain-lab-kit anton$ nb-reduce --help
 Commands:
-  fps  Reduce FPS rate of an LMDB db and output as LMDB and HDF5       [default]
+  fps  Reduce FPS rate of an LMDB db and output as LMDB and HDF5      [default]
 
 Options:
-  --infile, -i   LMDB input file                                      [required]
-  --outfile, -o  LMDB output file, also used for HDF5                 [required]
-  --fps, -f      Target frames per second                     [default: "100.0"]
-  --help         Show help                                             [boolean]
-  --debug, -d                                                   [default: false]
+  --infile, -i   LMDB input file                                     [required]
+  --outfile, -o  LMDB output file, also used for HDF5                [required]
+  --fps, -f      Target frames per second                    [default: "100.0"]
+  --help         Show help                                            [boolean]
+  --debug, -d                                                  [default: false]
 ```
 
-#### Example
+#### Example reduce
+
 ```bash
 # Reduce LMDB to 50 frames per second.
 
@@ -96,19 +107,20 @@ blob:node-chamberbrain-lab-kit anton$ nb-reduce -i /Users/foo/goo.lmdb \
 ```bash
 blob:node-chamberbrain-lab-kit anton$ nb-playback --help
 Commands:
-  lmdb2osc  Realtime playback of an LMDB file as OSC packets           [default]
+  lmdb2osc  Realtime playback of an LMDB file as OSC packets          [default]
 
 Options:
-  --infile, -i   LMDB input file                                      [required]
-  --fps, -f      Target frames per second                      [default: "50.0"]
-  --local, -l    Local OSC address to listen on      [default: "127.0.0.1:8888"]
-  --remote, -r   Remote OSC address to send to       [default: "127.0.0.1:9999"]
-  --address, -a  Override default OSC address
-  --help         Show help                                             [boolean]
-  --debug, -d                                                   [default: false]
+  --infile, -i   LMDB input file                                     [required]
+  --fps, -f      Target frames per second                     [default: "50.0"]
+  --local, -l    Local OSC address to listen on     [default: "127.0.0.1:8888"]
+  --remote, -r   Remote OSC address to send to      [default: "127.0.0.1:9999"]
+  --address, -a  Override default OSC addres
+  --help         Show help                                            [boolean]
+  --debug, -d                                                  [default: false]
 ```
 
-#### Example
+#### Example playback
+
 ```bash
 # Play back LMDB with 50 frames per second.
 # Bind to 0.0.0.0:7878 and broadcast OSC packets to 192.168.0.255:7777.
@@ -117,7 +129,9 @@ blob:node-chamberbrain-lab-kit anton$ nb-playback -i /Users/foo/goo.lmdb \
 > -f 50.0 -l 0.0.0.0:7878 -r 192.168.0.255:7777
 ```
 
-## Credits :euro: :yen: :dollar: :euro: :yen: :dollar: :euro: :yen: :dollar:
+## :euro: :yen: :dollar: :euro: :yen: :dollar: :euro: :yen: :dollar: Credits
 
 2017 :smoking::trollface: of Chamberlab    
-Licensed under the :sparkles: [Do What The Fuck You Want To Public License](https://github.com/Chamberlab/node-chamberbrain-lab-kit/blob/master/LICENSE) :sparkles:
+Licensed under the :sparkles:
+[Do What The Fuck You Want To Public License](https://github.com/Chamberlab/node-chamberbrain-lab-kit/blob/master/LICENSE) 
+:sparkles:
