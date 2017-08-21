@@ -27,7 +27,7 @@
     "reduce": "cross-env node dist/nanobrains/reduce.js",
     "build": "babel -d dist src",
     "watch": "babel --watch -d dist src",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Yikes! No tests yet.\" && exit 0"
   },
   "author": "Das Antonym / Chamberlab",
   "dependencies": {

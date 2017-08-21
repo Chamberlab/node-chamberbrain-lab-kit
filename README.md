@@ -1,5 +1,9 @@
 # Chamberbrain Lab Kit
 
+[![npm version](https://badge.fury.io/js/chamberbrain-lab-kit.svg)](https://badge.fury.io/js/chamberbrain-lab-kit)
+[![Code Climate](https://codeclimate.com/github/Chamberlab/node-chamberbrain-lab-kit/badges/gpa.svg)](https://codeclimate.com/github/Chamberlab/node-chamberbrain-lab-kit)
+[![Build Status](https://travis-ci.org/Chamberlab/node-chamberbrain-lab-kit.svg?branch=master)](https://travis-ci.org/Chamberlab/node-chamberbrain-lab-kit)
+
 > :sparkles: Tools used by Chamberlab to sonify & visualise [Nanobrain data](https://globalyoungacademy.net/the-well-tempered-brain-or-what-thinking-sounds-like). :dizzy:
 
 ![Brrrrainz.](https://media.giphy.com/media/l41m04gr7tRet7Uas/giphy.gif)
@@ -17,7 +21,7 @@ Tested on OS X 10.11 & 10.12.
 ## Installation
 
 ```shell
-npm install -g https://github.com/chamberlab/node-chamberbrain-lab-kit.git
+npm install -g chamberbrain-lab-kit
 ```
 
 ## Usage
