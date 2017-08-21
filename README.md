@@ -6,17 +6,13 @@
 
 ## Requirements
 
-### mac OS
+### macOS
+Tested on OS X 10.11 & 10.12.
 * Build tools  
   ``xcode-select --install``
-* Node.js v8.4.0 ([Installer](https://nodejs.org/en/download/current/) or [Package Manager](https://nodejs.org/en/download/package-manager/))
-
-:confused: Not really sure if these might be needed, so try installing without them first.
-* [Homebrew](https://docs.brew.sh/Installation.html)
-* HDF5 libs  
+* Node.js v8.4.0 (via [NVM](https://github.com/creationix/nvm#installation) (recommended), [Installer Pkg](https://nodejs.org/en/download/current/) or [Package Manager](https://nodejs.org/en/download/package-manager/))
+* [HDF5 library](https://www.hdfgroup.org/downloads/hdf5/) (e.g. Install via [Homebrew](https://docs.brew.sh/Installation.html))  
   ``brew install hdf5``
-* LMDB libs  
-  ``brew install lmdb``
 
 ## Installation
 
@@ -49,8 +45,8 @@ Options:
 ```bash
 # Convert CSV to LMDB as Float32.
 
-blob:dataconvert anton$ nb-convert -i /Users/foo/goo.csv -o /Users/foo \
-> -t Float32 csv2lmdb
+blob:node-chamberbrain-lab-kit anton$ nb-convert -i /Users/foo/goo.csv \
+> -o /Users/foo -t Float32 csv2lmdb
 ```
 
 ### Reduce
@@ -72,7 +68,7 @@ Options:
 ```bash
 # Reduce LMDB to 50 frames per second.
 
-blob:dataconvert anton$ nb-reduce -i /Users/foo/goo.lmdb \
+blob:node-chamberbrain-lab-kit anton$ nb-reduce -i /Users/foo/goo.lmdb \
 > -o /Users/foo/goo-50fps.lmdb -f 50.0
 ```
 
@@ -100,11 +96,11 @@ Options:
 # Play back LMDB with 50 frames per second.
 # Bind to 0.0.0.0:7878 and broadcast OSC packets to 192.168.0.255:7777.
 
-blob:dataconvert anton$ nb-playback -i /Users/foo/goo.lmdb \
+blob:node-chamberbrain-lab-kit anton$ nb-playback -i /Users/foo/goo.lmdb \
 > -f 50.0 -l 0.0.0.0:7878 -r 192.168.0.255:7777
 ```
 
 ## Credits
 
 :godmode: 2017 Das Antonym / Chamberlab   
-Licensed under the :trollface: [Do What The Fuck You Want To Public License](https://bitbucket.org/dasantonym/node-dataconvert/src/master/LICENSE)
+Licensed under the [Do What The Fuck You Want To Public License](https://github.com/Chamberlab/node-chamberbrain-lab-kit/blob/master/LICENSE) :trollface:
