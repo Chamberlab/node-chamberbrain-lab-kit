@@ -26,6 +26,10 @@ var _moment = require('moment');
 
 var _moment2 = _interopRequireDefault(_moment);
 
+var _microtime = require('microtime');
+
+var _microtime2 = _interopRequireDefault(_microtime);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var Stats = function () {
@@ -35,6 +39,7 @@ var Stats = function () {
     this._entries = 0;
     this._errors = 0;
     this._start = (0, _moment2.default)();
+    this._micros = 0;
   }
 
   (0, _createClass3.default)(Stats, [{
@@ -89,6 +94,14 @@ var Stats = function () {
     key: 'start',
     get: function get() {
       return this._start;
+    }
+  }, {
+    key: 'micros',
+    get: function get() {
+      return this._micros ? _microtime2.default.now() - this._micros : 0;
+    },
+    set: function set(val) {
+      this._micros = val || _microtime2.default.now();
     }
   }]);
   return Stats;

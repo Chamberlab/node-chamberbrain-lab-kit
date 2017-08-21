@@ -1,12 +1,14 @@
 import 'colors'
 import assert from 'assert'
 import moment from 'moment'
+import microtime from 'microtime'
 
 class Stats {
   constructor () {
     this._entries = 0
     this._errors = 0
     this._start = moment()
+    this._micros = 0
   }
   addEntries (count = 1) {
     assert.equal(typeof count, 'number')
@@ -42,6 +44,12 @@ class Stats {
   }
   get start () {
     return this._start
+  }
+  get micros () {
+    return this._micros ? microtime.now() - this._micros : 0
+  }
+  set micros (val) {
+    this._micros = val || microtime.now()
   }
 }
 

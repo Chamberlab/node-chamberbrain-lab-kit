@@ -14,9 +14,11 @@ var path = require('path'),
     Big = require('big.js'),
     CLI = require('clui'),
     PB = require('../playback'),
+    Stats = require('../stats').default,
     LMDB = require('../output').LMDB;
 
 var streams = {},
+    stats = new Stats(),
     spinner = new CLI.Spinner(),
     lmdb = new LMDB(),
     osc = new PB.OSC(process.env.ADDR_LOCAL, process.env.ADDR_REMOTE, process.env.ADDR_REMOTE.indexOf('.255:') !== -1);
@@ -26,34 +28,30 @@ osc.on('ready', function () {
   Debug('cl:osc')('Ready');
 
   var _loop = function _loop(id) {
+    Debug('cl:scheduler')('Init');
     var bundle = void 0,
-        millis = void 0,
+        keyMillis = void 0,
         slow = void 0,
         busy = void 0,
-        frameTime = void 0,
         workTime = void 0;
     var address = process.env.OSC_ADDRESS || '/' + id.split('-')[0],
-        interval = {
-      micros: Big(1000000).div(Big(process.env.FPS)).round(0),
-      millis: Big(1000).div(Big(process.env.FPS)).round(0)
+        proc = {
+      scheduler: new PB.Scheduler(),
+      frames: new PB.Frames()
     };
+    proc.frames.fps = process.env.FPS;
+    streams[id] = proc;
 
     process.stdout.write(('Opening DB ' + id + '...\n').cyan);
     process.stdout.write('Sending packets to osc://' + process.env.ADDR_REMOTE + address + ' ' + ('at ' + Big(process.env.FPS).toFixed(2) + 'fps\n\n').yellow);
     lmdb.openDb(id);
     var txn = lmdb.beginTxn(true);
-
-    Debug('cl:scheduler')('Init');
-    streams[id] = {
-      scheduler: new PB.Scheduler(),
-      frames: new PB.Frames()
-    };
     lmdb.initCursor(txn, id);
-    frameTime = microtime.now();
-    streams[id].scheduler.interval(interval.micros + 'u', function () {
+
+    proc.scheduler.interval(proc.frames.interval.micros + 'u', function () {
       if (process.env.DEBUG) {
-        Debug('cl:scheduler')('Diff: ' + (microtime.now() - frameTime) + '\u03BCs');
-        frameTime = microtime.now();
+        Debug('cl:scheduler')('Diff: ' + stats.micros + '\u03BCs');
+        stats.micros = microtime.now();
       }
       workTime = streams[id].scheduler.duration(function () {
         if (busy) throw new Error('Scheduler calls overlap');
@@ -61,21 +59,23 @@ osc.on('ready', function () {
 
         if (bundle) {
           osc.sendBundle(bundle);
-          var msg = 'Sending... ' + moment(Math.round(millis)).format('HH:mm:ss:SSS') + ' (Ctrl-C to exit)';
+          var msg = 'Sending... ' + moment(Math.round(keyMillis)).format('HH:mm:ss:SSS') + ' (Ctrl-C to exit)';
           if (process.env.DEBUG && slow) {
-            if (slow) msg += (' SLOW FRAME: ' + (workTime - interval.micros) + '\u03BCs over limit').red;
+            if (slow) msg += (' SLOW FRAME: ' + (workTime - proc.frames.interval.micros) + '\u03BCs over limit').red;
             Debug('cl:osc')(msg);
           } else if (spinner) spinner.message(msg);
         }
 
-        var entry = lmdb.getCursorData(txn, id, true);
-        streams[id].frames.data = entry.data;
-        millis = entry.key;
-
-        while (entry.key.minus(millis).lt(interval.millis) && entry.key.minus(millis).gte(Big(0))) {
-          streams[id].frames.interpolate(entry.data, PB.Frames.INTERPOLATE.MAX);
+        var keyDiff = void 0,
+            entry = lmdb.getCursorData(txn, id, true);
+        keyMillis = entry.key;
+        keyDiff = entry.key.minus(keyMillis);
+        proc.frames.data = entry.data;
+        while (keyDiff.lt(proc.frames.interval.millis) && keyDiff.gte(Big(0))) {
+          proc.frames.interpolate(entry.data, PB.Frames.INTERPOLATE.MAX);
           lmdb.advanceCursor(id);
           entry = lmdb.getCursorData(txn, id, true);
+          keyDiff = entry.key.minus(keyMillis);
         }
 
         bundle = PB.OSC.buildMessage(address, streams[id].frames.data);
@@ -84,7 +84,7 @@ osc.on('ready', function () {
 
       if (process.env.DEBUG) {
         Debug('cl:scheduler')('Work: ' + workTime + '\u03BCs');
-        slow = Big(workTime).gt(interval.micros);
+        slow = Big(workTime).gt(proc.frames.interval.micros);
       }
     });
   };

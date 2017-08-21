@@ -40,6 +40,8 @@ var Frames = function () {
 
     this._data = undefined;
     this._count = undefined;
+    this._fps = undefined;
+    this._interval = {};
   }
 
   (0, _createClass3.default)(Frames, [{
@@ -74,6 +76,20 @@ var Frames = function () {
         default:
           throw new Error('Unknown interpolation mode: ' + mode);
       }
+    }
+  }, {
+    key: 'interval',
+    get: function get() {
+      return this._interval;
+    }
+  }, {
+    key: 'fps',
+    set: function set(val) {
+      this._fps = (0, _big2.default)(val);
+      this._interval = {
+        micros: (0, _big2.default)(1000000).div(this._fps).round(0),
+        millis: (0, _big2.default)(1000).div(this._fps).round(0)
+      };
     }
   }, {
     key: 'data',

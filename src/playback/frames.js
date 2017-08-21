@@ -5,6 +5,8 @@ class Frames {
   constructor () {
     this._data = undefined
     this._count = undefined
+    this._fps = undefined
+    this._interval = {}
   }
 
   interpolate (data, mode = Frames.INTERPOLATE.MAX) {
@@ -32,6 +34,17 @@ class Frames {
         break
       default:
         throw new Error(`Unknown interpolation mode: ${mode}`)
+    }
+  }
+
+  get interval () {
+    return this._interval
+  }
+  set fps (val) {
+    this._fps = Big(val)
+    this._interval = {
+      micros: Big(1000000).div(this._fps).round(0),
+      millis: Big(1000).div(this._fps).round(0)
     }
   }
 
