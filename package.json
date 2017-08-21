@@ -1,6 +1,6 @@
 {
   "name": "chamberbrain-lab-kit",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Tools used by Chamberlab to sonify & visualise Nanobrain data.",
   "repository": {
     "type": "git",
