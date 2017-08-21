@@ -16,4 +16,6 @@ addons:
       - cmake
       - libblas-dev
       - libopenblas-dev
-      - hdf5
+      - libhdf5-100
+      - libhdf5-cpp-100
+      - libhdf5-dev
