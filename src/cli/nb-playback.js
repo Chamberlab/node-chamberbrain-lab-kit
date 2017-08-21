@@ -10,7 +10,7 @@ const yargs = require('yargs') // eslint-disable-line
       process.env.OSC_ADDRESS = argv.address
     }
     if (argv.debug) {
-      process.env.DEBUG_MODE = true
+      process.env.DEBUG = 'cl:*,' + process.env.DEBUG
     }
     require('../nanobrains/playback')
   })
