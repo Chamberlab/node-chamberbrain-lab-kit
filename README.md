@@ -131,7 +131,7 @@ blob:node-chamberbrain-lab-kit anton$ nb-playback -i /Users/foo/goo.lmdb \
 
 ## Credits :euro: :yen: :euro: :yen: :euro: :yen: :money_with_wings: !
 
-2017 :smoking::trollface: of Chamberlab
+2017 :smoking::trollface: / Chamberlab
 
 Licensed under the :sparkles:
 [Do What The Fuck You Want To Public License](https://github.com/Chamberlab/node-chamberbrain-lab-kit/blob/master/LICENSE) 
