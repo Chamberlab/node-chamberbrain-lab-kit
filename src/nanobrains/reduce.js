@@ -48,25 +48,26 @@ const worker = function (args) {
   }
 }
 
-Promise.map(ltt.in.lmdb.dbIds, function (id) {
-  const proc = {
+const id = ltt.in.lmdb.dbIds[0],
+  proc = {
     seq: new PB.Scheduler(),
     frames: new PB.Frames(),
     stats: new Stats(),
     outId: undefined
   }
-  ltt.in.lmdb.openDb(id)
-  ltt.in.lmdb.initCursor(ltt.in.txn, id)
-  proc.outId = ltt.out.lmdb.createDb(Object.assign({}, ltt.in.lmdb.meta[id]))
-  proc.frames.fps = process.env.FPS
-  processors[id] = proc
+// ltt.out.txn = ltt.out.lmdb.beginTxn()
+ltt.in.lmdb.openDb(id)
+ltt.in.lmdb.initCursor(ltt.in.txn, id)
+proc.outId = ltt.out.lmdb.createDb(Object.assign({}, ltt.in.lmdb.meta[id]))
+proc.frames.fps = parseFloat(process.env.FPS)
+processors[id] = proc
 
-  if (!process.env.DEBUG) spinner.start()
+if (!process.env.DEBUG) spinner.start()
 
-  return new Promise(function (resolve) {
-    proc.seq.delay(0, worker, [id, ltt, proc, null, true, resolve])
-  })
-}, {concurrency: 1}).then(() => {
+new Promise(function (resolve) {
+  proc.seq.delay(0, worker, [id, ltt, proc, null, true, resolve])
+}).then(() => {
+  ltt.close()
   process.exit(0)
 }).catch(err => {
   Logger.error(err.message)

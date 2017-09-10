@@ -41,19 +41,29 @@ Promise.map(lmdb.dbIds, function (id) {
     valueRange = { min: Math.floor(valueRange.min), max: Math.ceil(valueRange.max) }
   }
 
+  if (process.env.SYMMETRIC) {
+    const min = valueRange.min < 0 && Math.abs(valueRange.min) > valueRange.max
+        ? valueRange.min : valueRange.max * Math.sign(valueRange.min),
+      max = valueRange.max > 0 && Math.abs(valueRange.min) > valueRange.max ? Math.abs(valueRange.min) : valueRange.max
+    valueRange = { min, max }
+  }
+
   console.log(`MIN value ${valueRange.min}`.yellow)
   console.log(`MAX value ${valueRange.max}`.yellow)
 
+  const useRange = process.env.GLOBAL_RANGE || process.env.COMBINED_PLOT || process.env.SYMMETRIC
+
   function makePlot (data, i) {
-    const plotter = new LineChart(process.env.GLOBAL_RANGE || process.env.COMBINED_PLOT ? valueRange : undefined)
+    const plotter = new LineChart(useRange ? valueRange : undefined)
     plotter.data = data
     console.log(`Plot #${i + 1}`)
-    return plotter.makePlot(12000, 1080, 60)
+    return plotter.makePlot(12000, 1080, 200)
       .then(chart => {
         let pad = i < 9 ? '0' : '',
-          title = process.env.COMBINED_PLOT ? 'comb' : `ch${pad}${i + 1}`
+          title = process.env.COMBINED_PLOT ? 'comb' : `ch${pad}${i + 1}`,
+          symmetric = process.env.SYMMETRIC ? 'sym-' : ''
         fs.writeFileSync(path.join(__dirname, '..', '..', 'plots',
-          `${path.basename(infile, path.extname(infile))}-${scope}-${title}.svg`), chart)
+          `${path.basename(infile, path.extname(infile))}-${symmetric}${scope}-${title}.svg`), chart)
       })
   }
 

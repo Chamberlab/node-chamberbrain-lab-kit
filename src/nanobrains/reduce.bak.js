@@ -66,7 +66,7 @@ for (let id of lmdb.dbIds) {
     entry = lmdb.getCursorData(txnRead, id, true)
     while (entry.key.minus(millis).lt(interval) && entry.key.minus(millis).gte(Big('0.0'))) {
       entry.data.forEach((val, i) => {
-        if (max && val > max[i]) max[i] = val
+        if (Array.isArray(max) && Math.abs(val) > Math.abs(max[i])) max[i] = val
       })
       lmdb.advanceCursor(id)
       entry = lmdb.getCursorData(txnRead, id, true)

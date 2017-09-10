@@ -17,14 +17,15 @@ class LineChart {
     return this._data
   }
 
-  makePlot (width, height, padding = 60) {
+  makePlot (width, height, padding = 100) {
     const _ctx = this,
       _margin = { top: 0, right: 0, bottom: 0, left: 0 },
-      _lineWidth = 0.5,
+      _lineWidth = 1.0,
       _lineWidthGrid = 0.5,
-      _lineOpacityGrid = 0.5,
-      _tickSize = 40,
-      _tickPadding = 5,
+      _lineOpacityGrid = 0.3,
+      _tickSizeX = 40,
+      _tickSizeY = 100,
+      _tickPadding = 10,
       _lineColor = 'black',
       _isCurve = false
     return new Promise(function (resolve) {
@@ -54,10 +55,10 @@ class LineChart {
       const yScale = d3.scaleLinear()
         .rangeRound([_height, 0])
       const xAxis = d3.axisBottom(xScale)
-        .tickSize(_tickSize)
+        .tickSize(_tickSizeX)
         .tickPadding(_tickPadding)
       const yAxis = d3.axisLeft(yScale)
-        .tickSize(_tickSize)
+        .tickSize(_tickSizeY)
         .tickPadding(_tickPadding)
 
       const lineChart = d3.line()
@@ -78,12 +79,12 @@ class LineChart {
 
       function makeGridlinesX () {
         return d3.axisBottom(xScale)
-          .ticks(_tickSize * 2)
+          .ticks(_tickSizeX)
       }
 
       function makeGridlinesY () {
         return d3.axisLeft(yScale)
-          .ticks(_tickSize * 2)
+          .ticks(_tickSizeY)
       }
 
       g.append('g')
