@@ -2,5 +2,7 @@
 .idea
 plots/*.svg
 *.log
+logs/*.json
+logs/*.txt
 node_modules
 !.gitkeep

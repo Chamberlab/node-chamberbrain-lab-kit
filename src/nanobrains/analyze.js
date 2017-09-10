@@ -1,5 +1,6 @@
 require('colors')
 const path = require('path'),
+  fs = require('fs'),
   Promise = require('bluebird'),
   Logger = require('../logger').default,
   Ruleset = require('../ruleset').default,
@@ -7,7 +8,8 @@ const path = require('path'),
 
 const rules = new Ruleset(),
   lmdb = new LMDB(),
-  infile = path.resolve(process.env.IN_FILE)
+  infile = path.resolve(process.env.IN_FILE),
+  filename = path.basename(infile, path.extname(infile))
 
 lmdb.openEnv(infile)
 
@@ -25,6 +27,14 @@ Promise.map(lmdb.dbIds, function (id) {
 
   lmdb.close()
 }, {concurrency: 1}).then(() => {
+  console.log('STATS')
+  console.log('----------------------------------------')
+  let stats = ''
+  rules._set.forEach(entry => {
+    stats += `${entry.id}\t${entry.commands[0].log.length}\n`
+  })
+  fs.writeFileSync(path.join(__dirname, '..', '..', 'logs', `${filename}-stats.txt`), stats)
+  process.stdout.write(stats)
   process.exit(0)
 }).catch(err => {
   Logger.error(err.message)

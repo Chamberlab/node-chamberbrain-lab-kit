@@ -3,15 +3,21 @@ import commands from '../commands'
 
 class Ruleset {
   constructor () {
-    this._set = [
-      {
-        rule: new SynchronousSpikes(1, 0.05, true),
+    const makeSync = function (buffer, threshold, abs) {
+      return {
+        id: `sync_${buffer}_${abs ? 'abs' : Math.sign(threshold) < 0 ? 'neg' : 'pos'}_${threshold.toFixed(3)}`,
+        rule: new SynchronousSpikes(buffer, threshold, abs),
         condition: function (result) {
-          return Object.keys(result).length
+          return Object.keys(result).length > 1
         },
         commands: [new commands.LogCommand()]
       }
-    ]
+    }
+    this._set = []
+    for (let i = 1; i < 100; i++) {
+      this._set.push(makeSync(1, i * 0.005, false))
+      this._set.push(makeSync(1, i * -0.005, false))
+    }
   }
   evaluate (frame, millis) {
     this._set.forEach(entry => {
@@ -20,7 +26,7 @@ class Ruleset {
         result = entry.condition(state)
       if (result) {
         entry.commands.forEach(cmd => {
-          cmd.execute(millis, state)
+          cmd.execute(cmd.id, millis, state)
         })
       }
     })

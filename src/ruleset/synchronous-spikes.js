@@ -15,8 +15,11 @@ class SynchronousSpikes extends BaseRule {
       for (let c = 0; c < channelSize; c++) {
         if (typeof this.data[i][c] === 'number') {
           const value = this.absoluteThreshold ? Math.abs(this.data[i][c]) : this.data[i][c]
-          if ((this.threshold < 0 && value <= this.threshold) || value >= this.threshold) {
-            this._result[`c${c}`] = value
+          if ((this.threshold < 0 && value <= this.threshold)) {
+            this._result[`${c}_`] = value
+          }
+          else if (this.threshold > 0 && value >= this.threshold) {
+            this._result[`${c}_`] = value
           }
         }
       }
