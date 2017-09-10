@@ -8,7 +8,7 @@ const yargs = require('yargs') // eslint-disable-line
     if (argv.debug) {
       process.env.DEBUG_MODE = true
     }
-    require('../nanobrains/reduce.bak')
+    require('../nanobrains/reduce')
   })
   .option('infile', {
     alias: 'i',
