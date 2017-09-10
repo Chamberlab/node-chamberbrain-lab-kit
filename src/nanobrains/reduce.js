@@ -66,7 +66,7 @@ Promise.map(ltt.in.lmdb.dbIds, function (id) {
   return new Promise(function (resolve) {
     proc.seq.delay(0, worker, [id, ltt, proc, null, true, resolve])
   })
-}).then(() => {
+}, {concurrency: 1}).then(() => {
   process.exit(0)
 }).catch(err => {
   Logger.error(err.message)

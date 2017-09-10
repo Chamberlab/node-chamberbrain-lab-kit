@@ -18,12 +18,12 @@ class Frames {
     switch (mode) {
       case Frames.INTERPOLATE.MAX:
         data.forEach((val, i) => {
-          if (this._data[i] && val > this._data[i]) this._data[i] = val
+          if (typeof this._data[i] === 'number' && Math.abs(val) > Math.abs(this._data[i])) this._data[i] = val
         })
         break
       case Frames.INTERPOLATE.MIN:
         data.forEach((val, i) => {
-          if (this._data[i] && val < this._data[i]) this._data[i] = val
+          if (typeof this._data[i] === 'number' && Math.abs(val) < Math.abs(this._data[i])) this._data[i] = val
         })
         break
       case Frames.INTERPOLATE.AVG:
