@@ -48,7 +48,7 @@ Promise.map(lmdb.dbIds, function (id) {
     const plotter = new LineChart(process.env.GLOBAL_RANGE || process.env.COMBINED_PLOT ? valueRange : undefined)
     plotter.data = data
     console.log(`Plot #${i + 1}`)
-    return plotter.makePlot(12000, 1080)
+    return plotter.makePlot(12000, 1080, 60)
       .then(chart => {
         let pad = i < 9 ? '0' : '',
           title = process.env.COMBINED_PLOT ? 'comb' : `ch${pad}${i + 1}`

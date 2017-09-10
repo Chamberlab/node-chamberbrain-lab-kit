@@ -17,7 +17,7 @@ class LineChart {
     return this._data
   }
 
-  makePlot (width, height) {
+  makePlot (width, height, padding = 60) {
     const _ctx = this,
       _margin = { top: 0, right: 0, bottom: 0, left: 0 },
       _lineWidth = 0.5,
@@ -43,9 +43,9 @@ class LineChart {
       const _width = width - _margin.left - _margin.right
       const _height = height - _margin.top - _margin.bottom
 
-      const svg = d3n.createSVG(width, height)
+      const svg = d3n.createSVG(width + padding * 2, height + padding * 2)
         .append('g')
-        .attr('transform', `translate(${_margin.left}, ${_margin.top})`)
+        .attr('transform', `translate(${_margin.left + padding}, ${_margin.top + padding})`)
 
       const g = svg.append('g')
 
