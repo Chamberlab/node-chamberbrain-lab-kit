@@ -56,14 +56,16 @@ Promise.map(lmdb.dbIds, function (id) {
   function makePlot (data, i) {
     const plotter = new LineChart(useRange ? valueRange : undefined)
     plotter.data = data
-    console.log(`Plot #${i + 1}`)
-    return plotter.makePlot(12000, 1080, 200)
+    let pad = i < 9 ? '0' : '',
+      filename = path.basename(infile, path.extname(infile)),
+      title = `File: ${filename} - ` + (process.env.COMBINED_PLOT ? `Combined Channels` : `Channel #${pad}${i + 1}`),
+      variant = process.env.COMBINED_PLOT ? 'comb' : `ch${pad}${i + 1}`,
+      symmetric = process.env.SYMMETRIC ? 'sym-' : ''
+    console.log(`Plot #${i + 1}: ${title}`)
+    return plotter.makePlot(12000, 1080, 250, title)
       .then(chart => {
-        let pad = i < 9 ? '0' : '',
-          title = process.env.COMBINED_PLOT ? 'comb' : `ch${pad}${i + 1}`,
-          symmetric = process.env.SYMMETRIC ? 'sym-' : ''
         fs.writeFileSync(path.join(__dirname, '..', '..', 'plots',
-          `${path.basename(infile, path.extname(infile))}-${symmetric}${scope}-${title}.svg`), chart)
+          `${filename}-${symmetric}${scope}-${variant}.svg`), chart)
       })
   }
 

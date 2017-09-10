@@ -17,7 +17,7 @@ class LineChart {
     return this._data
   }
 
-  makePlot (width, height, padding = 100) {
+  makePlot (width, height, padding = 100, title = undefined) {
     const _ctx = this,
       _margin = { top: 0, right: 0, bottom: 0, left: 0 },
       _lineWidth = 1.0,
@@ -25,7 +25,7 @@ class LineChart {
       _lineOpacityGrid = 0.3,
       _tickSizeX = 40,
       _tickSizeY = 100,
-      _tickPadding = 10,
+      _tickPadding = 5,
       _lineColor = 'black',
       _isCurve = false
     return new Promise(function (resolve) {
@@ -87,6 +87,15 @@ class LineChart {
           .ticks(_tickSizeY)
       }
 
+      if (title) {
+        g.append('text')
+          .style('font-family', 'Helvetica Neue')
+          .style('font-size', '72px')
+          .attr('x', 0)
+          .attr('y', padding * -0.5)
+          .text(title)
+      }
+
       g.append('g')
         .attr('stroke-width', _lineWidthGrid)
         .style('opacity', _lineOpacityGrid)
@@ -98,6 +107,7 @@ class LineChart {
 
       g.append('g')
         .attr('transform', `translate(0, ${_height})`)
+        .style('font-size', '48px')
         .call(xAxis)
 
       g.append('g')
@@ -109,6 +119,7 @@ class LineChart {
         )
 
       g.append('g')
+        .style('font-size', '48px')
         .call(yAxis)
 
       if (_ctx.data.length && !Array.isArray(_ctx.data[0])) {
