@@ -21,6 +21,7 @@ class LineChart {
     const _ctx = this,
       _margin = { top: 0, right: 0, bottom: 0, left: 0 },
       _lineWidth = 1.0,
+      _lineOpacity = 1.0,
       _lineWidthGrid = 0.5,
       _lineOpacityGrid = 0.3,
       _tickSizeX = 40,
@@ -129,6 +130,7 @@ class LineChart {
       for (let i = 0; i < _ctx.data.length; i++) {
         g.append('path')
           .datum(_ctx.data[i])
+          .style('opacity', _lineOpacity)
           .attr('fill', 'none')
           .attr('stroke', _lineColor)
           .attr('stroke-width', _lineWidth)
