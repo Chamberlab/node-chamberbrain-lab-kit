@@ -1,5 +1,6 @@
 require('colors')
 const path = require('path'),
+  fs = require('fs'),
   Promise = require('bluebird'),
   Logger = require('../logger').default,
   LMDB = require('../output').LMDB,
@@ -10,59 +11,50 @@ const lmdb = new LMDB(),
 
 lmdb.openEnv(infile)
 
-const ChartjsNode = require('chartjs-node');
-// 600x600 canvas size
-var chartNode = new ChartjsNode(600, 600);
-return chartNode.drawChart(chartJsOptions)
-  .then(() => {
-    // chart is created
-
-    // get image as png buffer
-    return chartNode.getImageBuffer('image/png');
-  })
-  .then(buffer => {
-    Array.isArray(buffer) // => true
-    // as a stream
-    return chartNode.getImageStream('image/png');
-  })
-  .then(streamResult => {
-    // using the length property you can do things like
-    // directly upload the image to s3 by using the
-    // stream and length properties
-    streamResult.stream // => Stream object
-    streamResult.length // => Integer length of stream
-    // write to a file
-    return chartNode.writeImageToFile('image/png', './testimage.png');
-  })
-  .then(() => {
-    // chart is now written to the file path
-    // ./testimage.png
-  });
-
 Promise.map(lmdb.dbIds, function (id) {
   lmdb.openDb(id)
   const txn = lmdb.beginTxn(true)
   lmdb.initCursor(txn, id)
 
   let entry = lmdb.getCursorData(txn, id, false),
-    time = [],
-    mv = []
+    plots = [],
+    valueRange = { min: Number.MAX_VALUE, max: Number.MIN_VALUE }
   while (entry) {
-    time.push(entry.data[0])
-    mv.push(entry.data[1])
+    for (let i in entry.data) {
+      if (i > 0) {
+        if (i - 1 >= plots.length) {
+          plots.push([])
+        }
+        if (entry.data[i] < valueRange.min) valueRange.min = entry.data[i]
+        if (entry.data[i] > valueRange.max) valueRange.max = entry.data[i]
+        plots[i - 1].push({key: entry.data[0], value: entry.data[i]})
+      }
+    }
     lmdb.advanceCursor(id, false)
     entry = lmdb.getCursorData(txn, id, false)
   }
 
-  const plotter = new LineChart({})
-  plotter.axes = { x: time, y: mv }
-  return plotter.makePlot().then(chart => {
-    console.log(chart)
-    lmdb.close()
-  })
+  lmdb.close()
 
+  if (process.env.ROUND_RANGE) {
+    valueRange = { min: Math.floor(valueRange.min), max: Math.ceil(valueRange.max) }
+  }
 
-}).then(() => {
+  console.log('MIN value', valueRange.min)
+  console.log('MAX value', valueRange.max)
+
+  return Promise.map(plots, (plot, i) => {
+    const plotter = new LineChart(valueRange)
+    plotter.data = plot
+    console.log('Plotting channel', i + 1)
+    return plotter.makePlot(plot.length, 1080)
+      .then(chart => {
+        let pad = i < 9 ? '0' : ''
+        fs.writeFileSync(path.join(__dirname, '..', '..', 'plots',
+          `${path.basename(infile, path.extname(infile))}-ch-${pad}${i + 1}.svg`), chart)
+      })
+  }, {concurrency: 4})
+}, {concurrency: 1}).then(() => {
   process.exit(0)
 }).catch(err => {
   Logger.error(err.message)
