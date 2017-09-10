@@ -66,8 +66,13 @@ class LineChart {
 
       if (_isCurve) lineChart.curve(d3.curveBasis)
 
-      const domainDataX = _ctx._range.x ? [{key: _ctx._range.x.min}, {key: _ctx._range.x.max}] : _ctx.data,
-        domainDataY = _ctx._range.y ? [{value: _ctx._range.y.min}, {value: _ctx._range.y.max}] : _ctx.data
+      let data = _ctx.data
+      if (data.length && Array.isArray(data[0])) {
+        data = data[0]
+      }
+
+      const domainDataX = _ctx._range.x ? [{key: _ctx._range.x.min}, {key: _ctx._range.x.max}] : data,
+        domainDataY = _ctx._range.y ? [{value: _ctx._range.y.min}, {value: _ctx._range.y.max}] : data
       xScale.domain(d3.extent(domainDataX, d => d.key))
       yScale.domain(d3.extent(domainDataY, d => d.value))
 
@@ -105,12 +110,19 @@ class LineChart {
       g.append('g')
         .call(yAxis)
 
-      g.append('path')
-        .datum(_ctx.data)
-        .attr('fill', 'none')
-        .attr('stroke', _lineColor)
-        .attr('stroke-width', _lineWidth)
-        .attr('d', lineChart)
+      if (_ctx.data.length && !Array.isArray(_ctx.data[0])) {
+        _ctx.data = [_ctx.data]
+      }
+
+      for (let i = 0; i < _ctx.data.length; i++) {
+        g.append('path')
+          .datum(_ctx.data[i])
+          .attr('fill', 'none')
+          .attr('stroke', _lineColor)
+          .attr('stroke-width', _lineWidth)
+          .attr('d', lineChart)
+      }
+
       resolve(d3n.svgString())
     })
   }

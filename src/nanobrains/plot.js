@@ -17,6 +17,7 @@ Promise.map(lmdb.dbIds, function (id) {
   lmdb.initCursor(txn, id)
 
   let entry = lmdb.getCursorData(txn, id, false),
+    scope = process.env.GLOBAL_RANGE ? 'g' : 'l',
     plots = [],
     valueRange = { min: Number.MAX_VALUE, max: Number.MIN_VALUE }
   while (entry) {
@@ -40,24 +41,32 @@ Promise.map(lmdb.dbIds, function (id) {
     valueRange = { min: Math.floor(valueRange.min), max: Math.ceil(valueRange.max) }
   }
 
-  console.log('MIN value', valueRange.min)
-  console.log('MAX value', valueRange.max)
+  console.log(`MIN value ${valueRange.min}`.yellow)
+  console.log(`MAX value ${valueRange.max}`.yellow)
 
-  return Promise.map(plots, (plot, i) => {
-    const plotter = new LineChart(valueRange)
-    plotter.data = plot
-    console.log('Plotting channel', i + 1)
-    return plotter.makePlot(plot.length, 1080)
+  function makePlot (data, i) {
+    const plotter = new LineChart(process.env.GLOBAL_RANGE || process.env.COMBINED_PLOT ? valueRange : undefined)
+    plotter.data = data
+    console.log(`Plot #${i + 1}`)
+    return plotter.makePlot(12000, 1080)
       .then(chart => {
-        let pad = i < 9 ? '0' : ''
+        let pad = i < 9 ? '0' : '',
+          title = process.env.COMBINED_PLOT ? 'comb' : `ch${pad}${i + 1}`
         fs.writeFileSync(path.join(__dirname, '..', '..', 'plots',
-          `${path.basename(infile, path.extname(infile))}-ch-${pad}${i + 1}.svg`), chart)
+          `${path.basename(infile, path.extname(infile))}-${scope}-${title}.svg`), chart)
       })
+  }
+
+  if (process.env.COMBINED_PLOT) {
+    return makePlot(plots, 0)
+  }
+  return Promise.map(plots, (plot, i) => {
+    return makePlot(plot, i)
   }, {concurrency: 4})
 }, {concurrency: 1}).then(() => {
   process.exit(0)
 }).catch(err => {
   Logger.error(err.message)
-  Logger.debug(err.stack, 'cl:reduce')
+  Logger.debug(err.stack, 'cl:plot')
   process.exit(err.code)
 })
