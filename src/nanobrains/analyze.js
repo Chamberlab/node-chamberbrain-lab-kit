@@ -14,6 +14,7 @@ const rules = new Ruleset(),
 lmdb.openEnv(infile)
 
 Promise.map(lmdb.dbIds, function (id) {
+  console.log('Analyzing DB:', id)
   lmdb.openDb(id)
   const txn = lmdb.beginTxn(true)
   lmdb.initCursor(txn, id)
@@ -31,10 +32,23 @@ Promise.map(lmdb.dbIds, function (id) {
   console.log('----------------------------------------')
   let stats = ''
   rules._set.forEach(entry => {
-    stats += `${entry.id}\t${entry.commands[0].log.length}\n`
+    if (entry.commands[0].log.length) {
+      const counts = entry.commands[0].counts.sort((a, b) => {
+        a = parseInt(a)
+        b = parseInt(b)
+        if (a > b) return 1
+        if (a < b) return -1
+        return 0
+      }).join(' ')
+      const statsEntry = `${entry.id}\t${entry.commands[0].log.length}\t${counts}\n`
+      stats += statsEntry
+      process.stdout.write(statsEntry)
+      fs.writeFileSync(path.join(__dirname, '..', '..', 'logs',
+        `${filename}-log-${entry.id}.json`), JSON.stringify(entry.commands[0].log))
+    }
   })
+
   fs.writeFileSync(path.join(__dirname, '..', '..', 'logs', `${filename}-stats.txt`), stats)
-  process.stdout.write(stats)
   process.exit(0)
 }).catch(err => {
   Logger.error(err.message)
