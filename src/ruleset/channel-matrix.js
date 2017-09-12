@@ -1,3 +1,16 @@
+const collectChannelIds = function (matrix, groupId) {
+  const results = []
+  for (let key in matrix) {
+    if (key !== 'CHANNEL_COUNT') {
+      const intValue = parseInt(key)
+      if (matrix[key] === groupId && results.indexOf(intValue) === -1) {
+        results.push(intValue)
+      }
+    }
+  }
+  return results
+}
+
 const A = {
   'CHANNEL_COUNT': 17,
   '0': 0,
@@ -203,6 +216,7 @@ const C = {
 }
 
 export default {
+  collectChannelIds,
   A,
   B,
   C
