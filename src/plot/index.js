@@ -1,5 +1,7 @@
 import LineChart from './line-chart'
+import Voronoi from './voronoi'
 
 export {
-  LineChart
+  LineChart,
+  Voronoi
 }

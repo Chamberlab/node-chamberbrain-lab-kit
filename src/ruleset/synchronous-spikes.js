@@ -1,12 +1,13 @@
 import BaseRule from './base-rule'
 
 class SynchronousSpikes extends BaseRule {
-  constructor (maxBuffer = 1, threshold = 1.0, absoluteThreshold = false, channels = []) {
+  constructor (config) {
     super()
-    this.maxBuffer = maxBuffer
-    this.threshold = absoluteThreshold ? Math.abs(threshold) : threshold
-    this.absoluteThreshold = absoluteThreshold
-    this.channels = channels
+    this.buffer = config.buffer || 1
+    config.threshold = config.threshold || 1.0
+    this.threshold = config.absolute ? Math.abs(config.threshold) : config.threshold
+    this.absolute = (config.absolute)
+    this.channels = config.channels || []
     this._result = {}
   }
   _evaluate () {
@@ -15,7 +16,7 @@ class SynchronousSpikes extends BaseRule {
       const channelSize = this.data[i].length
       for (let c = 0; c < channelSize; c++) {
         if ((!this.channels.length || this.channels.indexOf(c) !== -1) && typeof this.data[i][c] === 'number') {
-          const value = this.absoluteThreshold ? Math.abs(this.data[i][c]) : this.data[i][c]
+          const value = this.absolute ? Math.abs(this.data[i][c]) : this.data[i][c]
           if ((this.threshold < 0 && value <= this.threshold)) {
             this._result[`${c}_`] = value
           }

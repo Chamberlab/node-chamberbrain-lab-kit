@@ -1,10 +1,15 @@
 class BaseRule {
-  constructor () {
+  constructor (id) {
+    this._id = id
     this._data = []
     this._maxBuffer = 1
   }
   _evaluate () {
     return true
+  }
+
+  get id () {
+    return this._id
   }
 
   get data () {
