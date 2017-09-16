@@ -40,7 +40,11 @@ Promise.map(lmdb.dbIds, function (id) {
         if (a < b) return -1
         return 0
       }).join(' ')
-      const statsEntry = `${entry.id}\t${entry.commands[0].log.length}\t${counts}\n`
+      const logLength = entry.commands[0].log.length
+      let statsEntry = `${entry.id}\t${logLength}\t`
+      statsEntry += `${logLength ? entry.commands[0].log[0].args[0] : ''}\t`
+      statsEntry += `${logLength ? entry.commands[0].log[Math.max(0, logLength - 2)].args[0] : ''}\t`
+      statsEntry += `${counts}\n`
       stats += statsEntry
       process.stdout.write(statsEntry)
       fs.writeFileSync(path.join(__dirname, '..', '..', 'logs',

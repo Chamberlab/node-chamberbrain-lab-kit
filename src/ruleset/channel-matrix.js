@@ -1,10 +1,10 @@
-const collectChannelIds = function (matrix, groupId) {
+const collectChannelIds = function (matrix, groupId, offset = 0) {
   const results = []
   for (let key in matrix) {
     if (key !== 'CHANNEL_COUNT') {
       const intValue = parseInt(key)
       if (matrix[key] === groupId && results.indexOf(intValue) === -1) {
-        results.push(intValue)
+        results.push(intValue + offset)
       }
     }
   }

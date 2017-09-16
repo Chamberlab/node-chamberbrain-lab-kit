@@ -13,12 +13,17 @@ class Ruleset {
     for (let key in this._groupSets) {
       const matrix = ChannelMatrix[key]
       for (let n = 0; n < matrix.CHANNEL_COUNT; n++) {
-        this._groupSets[key].push(ChannelMatrix.collectChannelIds(matrix, n))
+        this._groupSets[key].push(ChannelMatrix.collectChannelIds(matrix, n, 1))
       }
     }
-    for (let i = 1; i < 100; i++) {
-      this._set.push(Ruleset.makeSyncRule(1, i * 0.005, false, []))
-      this._set.push(Ruleset.makeSyncRule(1, i * -0.005, false, []))
+    for (let i = 1; i < 10; i++) {
+      for (let key in this._groupSets) {
+        for (let group of this._groupSets[key]) {
+          this._set.push(Ruleset.makeSyncRule(1, i * 0.005, true, group))
+          this._set.push(Ruleset.makeSyncRule(1, i * 0.005, false, group))
+          this._set.push(Ruleset.makeSyncRule(1, i * -0.005, false, group))
+        }
+      }
     }
   }
   evaluate (frame, millis) {
@@ -28,7 +33,7 @@ class Ruleset {
         result = entry.condition(state)
       if (result) {
         entry.commands.forEach(cmd => {
-          cmd.execute(cmd.id, millis, state)
+          cmd.execute(entry.rule.id, millis, state)
         })
       }
     })
@@ -37,15 +42,10 @@ class Ruleset {
   static makeSyncRule (buffer, threshold, absolute, channels) {
     const sig = Math.sign(threshold) < 0 ? 'neg' : 'pos',
       group = channels.length ? channels.join('') : '',
-      config = {
-        id: `group_${group}_sync_${buffer}_${absolute ? 'abs' : sig}_${threshold.toFixed(3)}`,
-        buffer,
-        threshold,
-        absolute,
-        channels
-      }
+      config = { buffer, threshold, absolute, channels }
 
     return {
+      id: `group_${group}_sync_${buffer}_${absolute ? 'abs' : sig}_${threshold.toFixed(3)}`,
       rule: new SynchronousSpikes(config),
       condition: function (result) {
         return Object.keys(result).length > 1
