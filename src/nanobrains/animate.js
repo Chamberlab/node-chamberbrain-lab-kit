@@ -2,7 +2,7 @@ require('colors')
 const path = require('path'),
   fs = require('fs'),
   Promise = require('bluebird'),
-  Logger = require('../logger').default,
+  Logger = require('../util').Logger,
   LMDB = require('../output').LMDB,
   Voronoi = require('../plot').Voronoi
 

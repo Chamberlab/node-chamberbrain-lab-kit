@@ -3,8 +3,7 @@ import Emitter from 'tiny-emitter'
 import path from 'path'
 import * as input from '../input'
 import * as output from '../output'
-import Stats from '../stats'
-import { padString, parseDouble } from '../util'
+import { Stats, padString, parseDouble } from '../util'
 import LMDB from '../output/lmdb'
 
 const csvToLMDB = function (infile, outdir, options = {}, statusHandler = undefined, endHandler = undefined) {

@@ -4,8 +4,8 @@ const path = require('path'),
   Big = require('big.js'),
   CLI = require('clui'),
   PB = require('../playback'),
-  Stats = require('../stats').default,
-  Logger = require('../logger').default,
+  Stats = require('../util').Stats,
+  Logger = require('../util').Logger,
   LMDB = require('../output').LMDB
 
 const streams = {},

@@ -1,5 +1,5 @@
 import LMDB from './lmdb'
-import Stats from '../stats'
+import Stats from '../util/stats'
 
 class LMDBTransferTool {
   constructor (infile, outfile) {

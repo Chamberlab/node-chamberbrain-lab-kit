@@ -1,3 +1,7 @@
+import ChannelMatrix from './channel-matrix'
+import Logger from './logger'
+import Stats from './stats'
+
 import Big from 'big.js'
 
 const padString = function (str, length, char = ' ', padLeft = false) {
@@ -18,6 +22,9 @@ const parseDouble = function (value) {
 }
 
 export {
+  ChannelMatrix,
+  Logger,
+  Stats,
   padString,
   parseDouble
 }

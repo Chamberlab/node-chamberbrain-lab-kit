@@ -18,10 +18,10 @@ class SynchronousSpikes extends BaseRule {
         if ((!this.channels.length || this.channels.indexOf(c) !== -1) && typeof this.data[i][c] === 'number') {
           const value = this.absolute ? Math.abs(this.data[i][c]) : this.data[i][c]
           if ((this.threshold < 0 && value <= this.threshold)) {
-            this._result[`${c}_`] = value
+            this._result[`${c}`] = value
           }
           else if (this.threshold > 0 && value >= this.threshold) {
-            this._result[`${c}_`] = value
+            this._result[`${c}`] = value
           }
         }
       }

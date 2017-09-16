@@ -1,18 +1,6 @@
-const collectChannelIds = function (matrix, groupId, offset = 0) {
-  const results = []
-  for (let key in matrix) {
-    if (key !== 'CHANNEL_COUNT') {
-      const intValue = parseInt(key)
-      if (matrix[key] === groupId && results.indexOf(intValue) === -1) {
-        results.push(intValue + offset)
-      }
-    }
-  }
-  return results
-}
-
-const A = {
-  'CHANNEL_COUNT': 17,
+const v1 = {
+  '_ID': 'v1',
+  '_CHANNEL_COUNT': 17,
   '0': 0,
   '1': 1,
   '2': 2,
@@ -79,8 +67,9 @@ const A = {
   '63': 16
 }
 
-const B = {
-  'CHANNEL_COUNT': 18,
+const v2 = {
+  '_ID': 'v2',
+  '_CHANNEL_COUNT': 18,
   '0': 0,
   '1': 1,
   '2': 2,
@@ -147,8 +136,9 @@ const B = {
   '63': 17
 }
 
-const C = {
-  'CHANNEL_COUNT': 16,
+const v3 = {
+  '_ID': 'v3',
+  '_CHANNEL_COUNT': 16,
   '0': 0,
   '1': 0,
   '2': 1,
@@ -215,9 +205,22 @@ const C = {
   '63': 15
 }
 
+const collectChannelIds = function (matrix, groupId, offset = 0) {
+  const results = []
+  for (let key in matrix) {
+    if (key[0] !== '_') {
+      const intValue = parseInt(key)
+      if (matrix[key] === groupId && results.indexOf(intValue) === -1) {
+        results.push(intValue + offset)
+      }
+    }
+  }
+  return results
+}
+
 export default {
-  collectChannelIds,
-  A,
-  B,
-  C
+  v1,
+  v2,
+  v3,
+  collectChannelIds
 }

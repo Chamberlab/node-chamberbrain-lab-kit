@@ -4,7 +4,7 @@ const path = require('path'),
   CLI = require('clui'),
   LMDB = require('../output').LMDB,
   HDF5 = require('../output').HDF5,
-  Stats = require('../stats').default
+  Stats = require('../util').Stats
 
 const infile = path.resolve(process.env.IN_FILE),
   outfile = path.resolve(process.env.OUT_FILE),

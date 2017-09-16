@@ -2,11 +2,18 @@ require('colors')
 const path = require('path'),
   fs = require('fs'),
   Promise = require('bluebird'),
-  Logger = require('../logger').default,
-  Ruleset = require('../ruleset').default,
+  ChannelMatrix = require('../util').ChannelMatrix,
+  Logger = require('../util').Logger,
+  LogSyncFrames = require('../rulesets').LogSyncFrames,
   LMDB = require('../output').LMDB
 
-const rules = new Ruleset(),
+const matrixId = process.env.MATRIX_ID || 'v1',
+  config = {
+    iterations: process.env.ITERATIONS ? parseInt(process.env.ITERATIONS) : 10,
+    start: process.env.BAND_START ? parseFloat(process.env.BAND_START) : 0.1,
+    step: process.env.BAND_STEP ? parseFloat(process.env.BAND_STEP) : 0.1
+  },
+  rules = new LogSyncFrames(config, ChannelMatrix[matrixId]),
   lmdb = new LMDB(),
   infile = path.resolve(process.env.IN_FILE),
   filename = path.basename(infile, path.extname(infile))
@@ -28,10 +35,15 @@ Promise.map(lmdb.dbIds, function (id) {
 
   lmdb.close()
 }, {concurrency: 1}).then(() => {
+  const basename = `${filename}-${config.iterations}-${config.start.toFixed(3)}-${config.step.toFixed(3)}-${matrixId}`,
+    basepath = path.join(__dirname, '..', '..', 'logs', basename)
+  if (!fs.existsSync(basepath)) {
+    fs.mkdirSync(basepath)
+  }
   console.log('STATS')
   console.log('----------------------------------------')
   let stats = ''
-  rules._set.forEach(entry => {
+  rules.entries.forEach(entry => {
     if (entry.commands[0].log.length) {
       const counts = entry.commands[0].counts.sort((a, b) => {
         a = parseInt(a)
@@ -47,12 +59,10 @@ Promise.map(lmdb.dbIds, function (id) {
       statsEntry += `${counts}\n`
       stats += statsEntry
       process.stdout.write(statsEntry)
-      fs.writeFileSync(path.join(__dirname, '..', '..', 'logs',
-        `${filename}-log-${entry.id}.json`), JSON.stringify(entry.commands[0].log))
+      fs.writeFileSync(path.join(basepath, `${entry.id}.json`), JSON.stringify(entry.commands[0].log))
     }
   })
-
-  fs.writeFileSync(path.join(__dirname, '..', '..', 'logs', `${filename}-stats.txt`), stats)
+  fs.writeFileSync(path.join(basepath, `${basename}-stats.csv`), stats)
   process.exit(0)
 }).catch(err => {
   Logger.error(err.message)

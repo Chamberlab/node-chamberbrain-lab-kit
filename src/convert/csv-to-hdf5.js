@@ -3,8 +3,7 @@ import Emitter from 'tiny-emitter'
 import path from 'path'
 import * as input from '../input'
 import * as output from '../output'
-import Stats from '../stats'
-import { padString, parseDouble } from '../util'
+import { Stats, padString, parseDouble } from '../util'
 
 const csvToHDF5 = function (infile, outdir, options = {}, statusHandler = undefined, endHandler = undefined) {
   process.stdout.write(`\nCSV 2 HDF5 ${new Array(61).fill('-').join('')}\n\n`.cyan)
