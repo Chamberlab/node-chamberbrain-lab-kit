@@ -35,7 +35,7 @@ class LogSyncFrames extends BaseRuleset {
       id: `group_${prefix}_${group}_sync_${buffer}_${absolute ? 'abs' : sig}_${threshold.toFixed(3)}`,
       rule: new SynchronousSpikes(config),
       condition: function (result) {
-        return Object.keys(result).length > 1
+        return Object.keys(result).filter(key => { return key[0] !== '_' }).length > 1
       },
       commands: [new LogCommand()]
     }

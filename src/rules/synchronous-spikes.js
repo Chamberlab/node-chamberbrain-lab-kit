@@ -11,7 +11,13 @@ class SynchronousSpikes extends BaseRule {
     this._result = {}
   }
   _evaluate () {
-    const bufferSize = this.bufferSize
+    let max = Number.MIN_VALUE,
+      min = Number.MAX_VALUE
+    const bufferSize = this.bufferSize,
+      updateMinMax = (value) => {
+        max = Math.max(max, value)
+        min = Math.min(min, value)
+      }
     for (let i = 0; i < bufferSize; i++) {
       const channelSize = this.data[i].length
       for (let c = 0; c < channelSize; c++) {
@@ -19,13 +25,17 @@ class SynchronousSpikes extends BaseRule {
           const value = this.absolute ? Math.abs(this.data[i][c]) : this.data[i][c]
           if ((this.threshold < 0 && value <= this.threshold)) {
             this._result[`${c}`] = value
+            updateMinMax(value)
           }
           else if (this.threshold > 0 && value >= this.threshold) {
             this._result[`${c}`] = value
+            updateMinMax(value)
           }
         }
       }
     }
+    this._result._max = max === Number.MIN_VALUE ? undefined : max
+    this._result._min = min === Number.MAX_VALUE ? undefined : min
     return this._result
   }
 }
