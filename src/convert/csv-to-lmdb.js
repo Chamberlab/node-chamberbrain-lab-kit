@@ -39,12 +39,13 @@ const csvToLMDB = function (infile, outdir, options = {}, statusHandler = undefi
 
     const onData = function (data) {
         if (row >= options.dataStart) {
-          const parsedKey = parseDouble(data[options.key.column]),
-            key = output.LMDB.stringKeyFromFloat(
-              parsedKey === null ? 0 : parsedKey,
-              options.key.length,
-              options.key.precision,
-              options.key.signPrefix)
+          const parsedKey = parseDouble(data[options.key.column])
+          if (typeof parsedKey !== 'number') return row++
+          const key = output.LMDB.stringKeyFromFloat(
+            parsedKey === null ? 0 : parsedKey,
+            options.key.length,
+            options.key.precision,
+            options.key.signPrefix)
           let values, hasError = false
           switch (options.type) {
             case LMDB.TYPES.FLOAT32:
