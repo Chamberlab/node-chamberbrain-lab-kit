@@ -20,7 +20,7 @@ for (let entry of entries) {
   if (ms) {
     if (lastMs && ms !== lastMs) {
       count++
-      if (count % 10000) console.log(`${count} frames processed`)
+      if (count % 10000 === 0) console.log(`${count} frames processed`)
       frame = []
     }
     frame.push(entry)
