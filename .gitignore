@@ -2,7 +2,8 @@
 .idea
 plots/*.svg
 *.log
-logs/*.json
-logs/*.txt
+logs/**/*.json
+logs/**/*.csv
+logs/**/*.txt
 node_modules
 !.gitkeep

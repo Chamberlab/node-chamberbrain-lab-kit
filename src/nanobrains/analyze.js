@@ -8,15 +8,23 @@ const path = require('path'),
   LMDB = require('../output').LMDB
 
 const matrixId = process.env.MATRIX_ID || 'v1',
-  config = {
-    iterations: process.env.ITERATIONS ? parseInt(process.env.ITERATIONS) : 10,
-    start: process.env.BAND_START ? parseFloat(process.env.BAND_START) : 0.1,
-    step: process.env.BAND_STEP ? parseFloat(process.env.BAND_STEP) : 0.1
-  },
-  rules = new LogSyncFrames(config, ChannelMatrix[matrixId]),
+  rules = new LogSyncFrames(ChannelMatrix[matrixId]),
   lmdb = new LMDB(),
   infile = path.resolve(process.env.IN_FILE),
-  filename = path.basename(infile, path.extname(infile))
+  filename = path.basename(infile, path.extname(infile)),
+  iterations = process.env.ITERATIONS ? parseInt(process.env.ITERATIONS) : 1,
+  start = process.env.BAND_START ? parseFloat(process.env.BAND_START) : 0.1,
+  step = process.env.BAND_STEP ? parseFloat(process.env.BAND_STEP) : 0.1
+
+for (let i = 0; i < iterations; i += 1) {
+  for (let group of rules.grouping) {
+    const key = rules.matrix ? rules.matrix._ID : undefined,
+      pos = i * step + start
+    rules.entries.push(LogSyncFrames.makeSyncRule(1, pos, true, group, key))
+    rules.entries.push(LogSyncFrames.makeSyncRule(1, pos, false, group, key))
+    rules.entries.push(LogSyncFrames.makeSyncRule(1, pos * -1.0, false, group, key))
+  }
+}
 
 lmdb.openEnv(infile)
 
@@ -35,7 +43,7 @@ Promise.map(lmdb.dbIds, function (id) {
 
   lmdb.close()
 }, {concurrency: 1}).then(() => {
-  const basename = `${filename}-${config.iterations}-${config.start.toFixed(3)}-${config.step.toFixed(3)}-${matrixId}`,
+  const basename = `${filename}-${iterations}-${start.toFixed(3)}-${step.toFixed(3)}-${matrixId}`,
     basepath = path.join(__dirname, '..', '..', 'logs', basename)
   if (!fs.existsSync(basepath)) {
     fs.mkdirSync(basepath)
@@ -44,18 +52,35 @@ Promise.map(lmdb.dbIds, function (id) {
   console.log('----------------------------------------')
   let stats = ''
   rules.entries.forEach(entry => {
-    if (entry.commands[0].log.length) {
+    let logSize = 0,
+      first = Number.MAX_VALUE,
+      last = Number.MIN_VALUE
+
+    Object.keys(entry.commands[0].log).forEach(id => {
+      const log = entry.commands[0].log[id]
+      if (log.entries.length) {
+        logSize += log.entries.length
+        // order entries chronologically by ms
+        log.entries.sort((a, b) => {
+          return a[0] > b[0] ? 1 : a[0] < b[0] ? -1 : 0
+        })
+        if (log.entries[0][0] < first) first = log.entries[0][0]
+        // FIXME: the Math.max(0, log.entries.length - 2) hack for my b0rked lmdb import needs to go!
+        if (log.entries[Math.max(0, log.entries.length - 2)][0] > last) last = log.entries[Math.max(0, log.entries.length - 2)][0]
+      }
+      else delete entry.commands[0].log[id]
+    })
+
+    if (logSize) {
       const counts = entry.commands[0].counts.sort((a, b) => {
         a = parseInt(a)
         b = parseInt(b)
-        if (a > b) return 1
-        if (a < b) return -1
-        return 0
+        return a > b ? 1 : a < b ? -1 : 0
       }).join(' ')
-      const logLength = entry.commands[0].log.length
-      let statsEntry = `${entry.id}\t${logLength}\t`
-      statsEntry += `${logLength ? entry.commands[0].log[0].args[0] : ''}\t`
-      statsEntry += `${logLength ? entry.commands[0].log[Math.max(0, logLength - 2)].args[0] : ''}\t`
+
+      let statsEntry = `${entry.id}\t${logSize}\t`
+      statsEntry += `${logSize ? first : ''}\t`
+      statsEntry += `${logSize ? last : ''}\t`
       statsEntry += `${counts}\n`
       stats += statsEntry
       process.stdout.write(statsEntry)

@@ -12,7 +12,7 @@ class BaseRuleset {
         result = entry.condition(state)
       if (result) {
         entry.commands.forEach(cmd => {
-          cmd.execute(entry.rule.id, millis, state)
+          cmd.execute(entry.id, millis, state)
         })
       }
     })

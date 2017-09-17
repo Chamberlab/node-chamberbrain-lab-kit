@@ -4,26 +4,24 @@ import { LogCommand } from '../commands'
 import { ChannelMatrix } from '../util'
 
 class LogSyncFrames extends BaseRuleset {
-  constructor (config = {}, matrix = undefined) {
+  constructor (matrix = undefined) {
     super()
-    this._config = Object.assign({ iterations: 10, start: 0.005, step: 0.005 }, config)
     this._matrix = matrix
     this._grouping = []
-    if (this._matrix) {
-      for (let n = 0; n < this._matrix._CHANNEL_COUNT; n++) {
-        this._grouping.push(ChannelMatrix.collectChannelIds(this._matrix, n, 1))
+
+    if (this.matrix) {
+      for (let n = 0; n < this.matrix._CHANNEL_COUNT; n++) {
+        this.grouping.push(ChannelMatrix.collectChannelIds(this.matrix, n, 1))
       }
     }
-    else this._grouping.push([])
-    for (let i = 0; i < this._config.iterations; i += 1) {
-      for (let group of this._grouping) {
-        const key = this._matrix ? this._matrix._ID : undefined,
-          pos = i * this._config.step + this._config.start
-        this.entries.push(LogSyncFrames.makeSyncRule(1, pos, true, group, key))
-        this.entries.push(LogSyncFrames.makeSyncRule(1, pos, false, group, key))
-        this.entries.push(LogSyncFrames.makeSyncRule(1, pos * -1.0, false, group, key))
-      }
-    }
+    else this.grouping.push([])
+  }
+
+  get grouping () {
+    return this._grouping
+  }
+  get matrix () {
+    return this._matrix
   }
 
   static makeSyncRule (buffer, threshold, absolute, channels, prefix = '') {
