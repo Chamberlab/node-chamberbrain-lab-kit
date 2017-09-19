@@ -48,6 +48,7 @@
     "node-lmdb": "git+https://github.com/Venemo/node-lmdb.git",
     "osc": "^2.2.0",
     "tiny-emitter": "^2.0.2",
+    "tonal": "^0.69.9",
     "uuid": "^3.1.0",
     "yargs": "^8.0.2"
   },
