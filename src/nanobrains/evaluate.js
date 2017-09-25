@@ -1,10 +1,9 @@
 const path = require('path'),
   fs = require('fs'),
   tonal = require('tonal'),
-  Note = require('chamberlib/src/harmonics/Note').default,
-  TonalEvent = require('chamberlib/src/events/TonalEvent').default,
-  Song = require('chamberlib/src/data/Song').default,
-  Track = require('chamberlib/src/data/Track').default
+  harmonics = require('chamberlib/src/harmonics'),
+  events = require('chamberlib/src/events'),
+  data = require('chamberlib/src/data')
 
 const basepath = process.env.BASE_PATH,
   filenames = fs.readdirSync(basepath),
@@ -169,22 +168,26 @@ for (let groupId in entries) {
   }
 }
 
-const tracks = []
-Object.keys(notes).forEach(gid => {
-  const track = new Track([], `notes ${gid}`, gid) // Object.keys(entries).map(groupId => new Track([], `notes ${groupId}`))
-  Object.keys(notes[gid]).forEach(ms => {
-    notes[gid][ms].forEach(note => {
-      const nte = new Note(note)
-      nte.fromString(note)
-      const te = new TonalEvent(`${ms} ms`, nte, `${125.0} ms`)
-      track.push(te)
+function notesToMidi (notes, filename) {
+  const tracks = []
+  Object.keys(notes).forEach(gid => {
+    const track = new data.Track([], `notes ${gid}`, gid)
+    Object.keys(notes[gid]).forEach(ms => {
+      notes[gid][ms].forEach(note => {
+        const nte = new harmonics.Note(note)
+        nte.fromString(note)
+        const te = new events.TonalEvent(`${ms} ms`, nte, `${125.0} ms`)
+        track.push(te)
+      })
     })
+    tracks.push(track)
   })
-  tracks.push(track)
-})
 
-const notesSong = new Song(tracks, 120)
-notesSong.toMidiFile(path.join(__dirname, '..', '..', 'midi', `${path.basename(process.env.BASE_PATH)}.mid`))
+  const notesSong = new data.Song(tracks, 120)
+  notesSong.toMidiFile(filename)
+}
+
+notesToMidi(notes, path.join(__dirname, '..', '..', 'midi', `${path.basename(process.env.BASE_PATH)}.mid`))
 
 console.log(`${count} entries processed`)
 console.log('Done.')
