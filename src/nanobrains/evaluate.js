@@ -1,19 +1,15 @@
 const path = require('path'),
   fs = require('fs'),
-  tonal = require('tonal')
+  tonal = require('tonal'),
+  Note = require('chamberlib/src/harmonics/Note').default,
+  TonalEvent = require('chamberlib/src/events/TonalEvent').default,
+  Song = require('chamberlib/src/data/Song').default,
+  Track = require('chamberlib/src/data/Track').default
 
 const basepath = process.env.BASE_PATH,
   filenames = fs.readdirSync(basepath),
   entries = {},
   stats = {}
-
-const index = {
-  root: 0,
-  mode: 0,
-  degree: 1,
-  chord: 3,
-  octave: 3
-}
 
 // const chords = tonal.chord.names()
 // const scales = tonal.scale.names()
@@ -34,31 +30,29 @@ const chordMap = {
 function getFifths (root = 'C', steps = 6, offset = 0, clockwise = true) {
   return tonal.range.fifths(root, [offset || 0, (steps || 1) * (clockwise ? 1 : -1)])
 }
-function getNotes () {
-  return tonal.scale.notes(`${getFifths(roots[index.root], 6)[index.degree]} ${modes[index.mode]}`)
-}
-function getIntervals () {
-  return tonal.scale.intervals(`${roots[index.root]} ${modes[index.mode]}`)
-}
-function getChord (octaveShift = 0) {
+
+function getChord (index, octaveShift = 0) {
   return tonal.chord.get(chordMap[degrees[index.degree]][index.chord],
     `${getFifths(roots[index.root], 6)[index.degree]}${index.octave + octaveShift}`)
+}
+/*
+function getNotes (degree = 0, mode = 0, root = 0) {
+  return tonal.scale.notes(`${getFifths(roots[root], 6)[degree]} ${modes[mode]}`)
+}
+function getIntervals (mode = 0, root = 0) {
+  return tonal.scale.intervals(`${roots[root]} ${modes[mode]}`)
 }
 function getMidi (notes) {
   if (!Array.isArray(notes)) notes = [notes]
   return notes.map(note => tonal.note.midi(note))
 }
+*/
 
 const syncMap = [0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6]
 function evalSync (syncSpikes) {
   syncSpikes = Math.max(0, Math.min(syncSpikes, syncMap.length - 1))
   return syncMap[syncSpikes]
 }
-
-const intervals = getIntervals(),
-  chord = getChord(),
-  cof = getFifths(roots[index.root]),
-  midi = getMidi(chord)
 
 function getFrameStats (frame) {
   const result = {
@@ -123,9 +117,18 @@ for (let groupId in entries) {
       sigIds = isBand ? ['abs'] : ['pos', 'neg']
     for (let sigId of sigIds) {
       if (!entries[groupId][ruleId][sigId]) continue
+      if (!Array.isArray(notes[groupId])) notes[groupId] = []
       for (let paramId in entries[groupId][ruleId][sigId]) {
         const values = entries[groupId][ruleId][sigId][paramId].v
-        let noteIndex = -1, process = false
+        const index = {
+          root: 0,
+          mode: 0,
+          degree: 1,
+          chord: 3,
+          octave: 3
+        }
+        let noteIndex = -1,
+          process = false
         if (!Array.isArray(values)) throw new Error(`Broken entry for ${groupId}_${ruleId}_${sigId}_${paramId}`)
         if (isBand) {
           noteIndex = noteBands.indexOf(paramId)
@@ -152,18 +155,36 @@ for (let groupId in entries) {
               count++
               if (count % 100000 === 0) console.log(`${count} entries processed`)
               frames[msKey] = []
-              notes[msKey] = []
+              notes[groupId][msKey] = []
               lastMs = msKey
             }
             frames[msKey].push(entry)
-            const note = getNotes()[noteIndex]
-            if (noteIndex > -1 && notes[msKey].indexOf(note) === -1) notes[msKey].push(note)
+            const cof = getFifths(`${roots[index.root]}${index.octave}`, noteIndex, index.degree),
+              note = cof[cof.length - 1]
+            if (noteIndex > -1 && notes[groupId][msKey].indexOf(note) === -1) notes[groupId][msKey].push(note)
           }
         }
       }
     }
   }
 }
+
+const tracks = []
+Object.keys(notes).forEach(gid => {
+  const track = new Track([], `notes ${gid}`, gid) // Object.keys(entries).map(groupId => new Track([], `notes ${groupId}`))
+  Object.keys(notes[gid]).forEach(ms => {
+    notes[gid][ms].forEach(note => {
+      const nte = new Note(note)
+      nte.fromString(note)
+      const te = new TonalEvent(`${ms} ms`, nte, `${125.0} ms`)
+      track.push(te)
+    })
+  })
+  tracks.push(track)
+})
+
+const notesSong = new Song(tracks, 120)
+notesSong.toMidiFile(path.join(__dirname, '..', '..', 'midi', `${path.basename(process.env.BASE_PATH)}.mid`))
 
 console.log(`${count} entries processed`)
 console.log('Done.')
