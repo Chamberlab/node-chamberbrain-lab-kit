@@ -24,7 +24,7 @@
   - macOS: ``xcode-select --install``
   - Ubuntu 14.04: ``sudo apt-get install build-essential gcc-4.9 g++-4.9``
   
-#### Node.js >= 8.4.0
+#### Node.js >= 8.6.0
   - [NVM](https://github.com/creationix/nvm#installation) (recommended)
   - "one-click" [Installer](https://nodejs.org/en/download/current/)
   - your favourite
