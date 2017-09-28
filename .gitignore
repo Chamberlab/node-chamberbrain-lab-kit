@@ -1,6 +1,8 @@
 .DS_Store
 .idea
-plots/*.svg
+plots/**/*.svg
+plots/**/*.png
+midi/**/*.mid
 *.log
 logs/**/*.json
 logs/**/*.csv
