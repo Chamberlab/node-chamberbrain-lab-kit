@@ -29,13 +29,13 @@ for (let group of syncRules.grouping) {
     band = {low: start + step * b, high: start + step * (b + 1)}
     bandRules.entries.push(LogBandFrames.makeBandRule(1, band, true, group, key))
     bandRules.entries.push(LogBandFrames.makeBandRule(1, band, false, group, key))
-    bandRules.entries.push(LogBandFrames.makeBandRule(1, {low: band.low * -1.0, high: band.high * -1.0}, false, group, key))
+    bandRules.entries.push(LogBandFrames.makeBandRule(1, {low: band.high * -1.0, high: band.low * -1.0}, false, group, key))
   }
 
   band = {low: topMin, high: topMax}
   bandRules.entries.push(LogBandFrames.makeBandRule(1, band, true, group, key))
   bandRules.entries.push(LogBandFrames.makeBandRule(1, band, false, group, key))
-  bandRules.entries.push(LogBandFrames.makeBandRule(1, {low: band.low * -1.0, high: band.high * -1.0}, false, group, key))
+  bandRules.entries.push(LogBandFrames.makeBandRule(1, {low: band.high * -1.0, high: band.low * -1.0}, false, group, key))
 
   syncRules.entries.push(LogSyncFrames.makeSyncRule(1, syncMin, true, group, key))
   syncRules.entries.push(LogSyncFrames.makeSyncRule(1, syncMin, false, group, key))
@@ -69,35 +69,36 @@ Promise.map(lmdb.dbIds, function (id) {
   console.log('----------------------------------------')
   let stats = ''
   syncRules.entries.forEach(entry => {
-    let logSize = 0,
+    let entrySize = 0,
       first = Number.MAX_VALUE,
       last = Number.MIN_VALUE
 
     Object.keys(entry.commands[0].log).forEach(id => {
-      const log = entry.commands[0].log[id]
-      if (log.entries.length) {
-        logSize += log.entries.length
+      const log = entry.commands[0].log[id],
+        // FIXME: this hack for my b0rked lmdb import needs to go!
+        logLen = Math.max(0, log.entries.length - 1)
+      if (logLen) {
+        entrySize += logLen
         // order entries chronologically by ms
         log.entries.sort((a, b) => {
           return a[0] > b[0] ? 1 : a[0] < b[0] ? -1 : 0
         })
         if (log.entries[0][0] < first) first = log.entries[0][0]
-        // FIXME: the Math.max(0, log.entries.length - 2) hack for my b0rked lmdb import needs to go!
-        if (log.entries[Math.max(0, log.entries.length - 2)][0] > last) last = log.entries[Math.max(0, log.entries.length - 2)][0]
+        if (log.entries[logLen - 1][0] > last) last = log.entries[logLen - 1][0]
       }
-      else delete entry.commands[0].log[id]
+      // else delete entry.commands[0].log[id]
     })
 
-    if (logSize) {
+    if (entrySize) {
       const counts = entry.commands[0].counts.sort((a, b) => {
         a = parseInt(a)
         b = parseInt(b)
         return a > b ? 1 : a < b ? -1 : 0
       }).join(' ')
 
-      let statsEntry = `${entry.id}\t${logSize}\t`
-      statsEntry += `${logSize ? first : ''}\t`
-      statsEntry += `${logSize ? last : ''}\t`
+      let statsEntry = `${entry.id}\t${entrySize}\t`
+      statsEntry += `${entrySize ? first : ''}\t`
+      statsEntry += `${entrySize ? last : ''}\t`
       statsEntry += `${counts}\n`
       stats += statsEntry
       process.stdout.write(statsEntry)
@@ -105,35 +106,36 @@ Promise.map(lmdb.dbIds, function (id) {
     }
   })
   bandRules.entries.forEach(entry => {
-    let logSize = 0,
+    let entrySize = 0,
       first = Number.MAX_VALUE,
       last = Number.MIN_VALUE
 
     Object.keys(entry.commands[0].log).forEach(id => {
-      const log = entry.commands[0].log[id]
-      if (log.entries.length) {
-        logSize += log.entries.length
+      const log = entry.commands[0].log[id],
+        // FIXME: this hack for my b0rked lmdb import needs to go!
+        logLen = Math.max(0, log.entries.length - 1)
+      if (logLen) {
+        entrySize += logLen
         // order entries chronologically by ms
         log.entries.sort((a, b) => {
           return a[0] > b[0] ? 1 : a[0] < b[0] ? -1 : 0
         })
         if (log.entries[0][0] < first) first = log.entries[0][0]
-        // FIXME: the Math.max(0, log.entries.length - 2) hack for my b0rked lmdb import needs to go!
-        if (log.entries[Math.max(0, log.entries.length - 2)][0] > last) last = log.entries[Math.max(0, log.entries.length - 2)][0]
+        if (log.entries[logLen - 1][0] > last) last = log.entries[logLen - 1][0]
       }
-      else delete entry.commands[0].log[id]
+      // else entry.commands[0].log[id] = undefined
     })
 
-    if (logSize) {
+    if (entrySize) {
       const counts = entry.commands[0].counts.sort((a, b) => {
         a = parseInt(a)
         b = parseInt(b)
         return a > b ? 1 : a < b ? -1 : 0
       }).join(' ')
 
-      let statsEntry = `${entry.id}\t${logSize}\t`
-      statsEntry += `${logSize ? first : ''}\t`
-      statsEntry += `${logSize ? last : ''}\t`
+      let statsEntry = `${entry.id}\t${entrySize}\t`
+      statsEntry += `${entrySize ? first : ''}\t`
+      statsEntry += `${entrySize ? last : ''}\t`
       statsEntry += `${counts}\n`
       stats += statsEntry
       process.stdout.write(statsEntry)
