@@ -208,10 +208,10 @@ const v3 = {
 const collectChannelIds = function (matrix, groupId, offset = 0) {
   const results = []
   for (let key in matrix) {
-    if (key[0] !== '_') {
-      const intValue = parseInt(key)
+    if (typeof key === 'string' && key[0] !== '_') {
+      const intValue = parseInt(key) + offset
       if (matrix[key] === groupId && results.indexOf(intValue) === -1) {
-        results.push(intValue + offset)
+        results.push(intValue)
       }
     }
   }

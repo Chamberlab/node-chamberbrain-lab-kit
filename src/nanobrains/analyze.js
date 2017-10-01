@@ -2,15 +2,16 @@ require('colors')
 const path = require('path'),
   fs = require('fs'),
   Promise = require('bluebird'),
-  ChannelMatrix = require('../util').ChannelMatrix,
-  Logger = require('../util').Logger,
+  util = require('../util'),
   LogBandFrames = require('../rulesets').LogBandFrames,
   LogSyncFrames = require('../rulesets').LogSyncFrames,
   LMDB = require('../output').LMDB
 
+process.stdout.write('\n\nStarting data analysis...\n'.cyan)
+
 const matrixId = process.env.MATRIX_ID || 'v1',
-  bandRules = new LogBandFrames(ChannelMatrix[matrixId]),
-  syncRules = new LogSyncFrames(ChannelMatrix[matrixId]),
+  bandRules = new LogBandFrames(util.ChannelMatrix[matrixId]),
+  syncRules = new LogSyncFrames(util.ChannelMatrix[matrixId]),
   lmdb = new LMDB(),
   infile = path.resolve(process.env.IN_FILE),
   filename = path.basename(infile, path.extname(infile)),
@@ -23,129 +24,98 @@ const matrixId = process.env.MATRIX_ID || 'v1',
 
 for (let group of syncRules.grouping) {
   const key = syncRules.matrix ? syncRules.matrix._ID : undefined
-  let band
 
-  for (let b = 0; b < iterations; b++) {
-    band = {low: start + step * b, high: start + step * (b + 1)}
+  let band = {low: topMin, high: topMax}
+  bandRules.entries.push(LogBandFrames.makeBandRule(1, band, true, group, key))
+  for (let b = start; b < start + iterations * step; b += step) {
+    band = {low: b, high: b + step}
     bandRules.entries.push(LogBandFrames.makeBandRule(1, band, true, group, key))
-    bandRules.entries.push(LogBandFrames.makeBandRule(1, band, false, group, key))
-    bandRules.entries.push(LogBandFrames.makeBandRule(1, {low: band.high * -1.0, high: band.low * -1.0}, false, group, key))
   }
 
-  band = {low: topMin, high: topMax}
-  bandRules.entries.push(LogBandFrames.makeBandRule(1, band, true, group, key))
-  bandRules.entries.push(LogBandFrames.makeBandRule(1, band, false, group, key))
-  bandRules.entries.push(LogBandFrames.makeBandRule(1, {low: band.high * -1.0, high: band.low * -1.0}, false, group, key))
-
-  syncRules.entries.push(LogSyncFrames.makeSyncRule(1, syncMin, true, group, key))
   syncRules.entries.push(LogSyncFrames.makeSyncRule(1, syncMin, false, group, key))
   syncRules.entries.push(LogSyncFrames.makeSyncRule(1, syncMin * -1.0, false, group, key))
 }
 
 lmdb.openEnv(infile)
-
-Promise.map(lmdb.dbIds, function (id) {
-  console.log('Analyzing DB:', id)
+for (let id of lmdb.dbIds) {
+  process.stdout.write(`Reading and processing from LMDB ${id}...`.yellow)
+  let txn, idx, data, entry
   lmdb.openDb(id)
-  const txn = lmdb.beginTxn(true)
+  txn = lmdb.beginTxn(true)
   lmdb.initCursor(txn, id)
-
-  let entry = lmdb.getCursorData(txn, id, false)
-  while (entry) {
-    bandRules.evaluate(entry.data.slice(1), entry.data[0])
-    syncRules.evaluate(entry.data.slice(1), entry.data[0])
+  while ((entry = lmdb.getCursorData(txn, id, false))) {
+    idx = entry.data[0]
+    data = entry.data.subarray(1)
+    bandRules.evaluate(data, idx)
+    syncRules.evaluate(data, idx)
     lmdb.advanceCursor(id, false)
-    entry = lmdb.getCursorData(txn, id, false)
   }
-
+  process.stdout.write(`done.\n`.yellow)
   lmdb.close()
-}, {concurrency: 1}).then(() => {
-  const basename = `${filename}-${iterations}-${start.toFixed(3)}-${step.toFixed(3)}-${matrixId}`,
-    basepath = path.join(__dirname, '..', '..', 'logs', basename)
-  if (!fs.existsSync(basepath)) {
-    fs.mkdirSync(basepath)
-  }
-  console.log('STATS')
-  console.log('----------------------------------------')
-  let stats = ''
-  syncRules.entries.forEach(entry => {
-    let entrySize = 0,
-      first = Number.MAX_VALUE,
-      last = Number.MIN_VALUE
+}
 
-    Object.keys(entry.commands[0].log).forEach(id => {
-      const log = entry.commands[0].log[id],
+console.log('\n\nSTATS')
+console.log('----------------------------------------')
+let stats = ''
+
+function storeRuleEntries (entries, basepath) {
+  return Promise.each(entries, entry => {
+    let outLog = {}, entrySize = 0, timeRange
+
+    for (let id in entry.commands[0].log) {
+      const log = entry.commands[0].log[id]
+      if (Array.isArray(log.entries)) {
+        log.entries.sort(util.sort.framesByTimeAsc)
         // FIXME: this hack for my b0rked lmdb import needs to go!
-        logLen = Math.max(0, log.entries.length - 1)
-      if (logLen) {
-        entrySize += logLen
-        // order entries chronologically by ms
-        log.entries.sort((a, b) => {
-          return a[0] > b[0] ? 1 : a[0] < b[0] ? -1 : 0
-        })
-        if (log.entries[0][0] < first) first = log.entries[0][0]
-        if (log.entries[logLen - 1][0] > last) last = log.entries[logLen - 1][0]
+        if (log.entries.length) log.entries.pop()
+        if (log.entries.length) {
+          entrySize += log.entries.length
+          timeRange = util.Stats.updateValueRange(log.entries[0][0], timeRange)
+          timeRange = util.Stats.updateValueRange(log.entries[log.entries.length - 1][0], timeRange)
+          outLog[id] = {entries: []}
+          for (let e of log.entries) outLog[id].entries.push(e)
+        }
       }
-      // else delete entry.commands[0].log[id]
-    })
+    }
 
-    if (entrySize) {
-      const counts = entry.commands[0].counts.sort((a, b) => {
-        a = parseInt(a)
-        b = parseInt(b)
-        return a > b ? 1 : a < b ? -1 : 0
-      }).join(' ')
-
-      let statsEntry = `${entry.id}\t${entrySize}\t`
-      statsEntry += `${entrySize ? first : ''}\t`
-      statsEntry += `${entrySize ? last : ''}\t`
-      statsEntry += `${counts}\n`
+    if (entrySize && entry.commands.length > 0) {
+      let countstr = entry.commands[0].counts.sort(util.sort.primitveNumbersAsc).join(' '),
+        statsEntry = `${entry.id}\t${entrySize}\t` +
+          `${entrySize ? timeRange.min : ''}\t${entrySize ? timeRange.max : ''}\t${countstr}\n`
       stats += statsEntry
       process.stdout.write(statsEntry)
-      fs.writeFileSync(path.join(basepath, `${entry.id}.json`), JSON.stringify(entry.commands[0].log))
+      return Promise.promisify(fs.writeFile)(path.join(basepath, `${entry.id}.json`), JSON.stringify(outLog))
     }
   })
-  bandRules.entries.forEach(entry => {
-    let entrySize = 0,
-      first = Number.MAX_VALUE,
-      last = Number.MIN_VALUE
+}
 
-    Object.keys(entry.commands[0].log).forEach(id => {
-      const log = entry.commands[0].log[id],
-        // FIXME: this hack for my b0rked lmdb import needs to go!
-        logLen = Math.max(0, log.entries.length - 1)
-      if (logLen) {
-        entrySize += logLen
-        // order entries chronologically by ms
-        log.entries.sort((a, b) => {
-          return a[0] > b[0] ? 1 : a[0] < b[0] ? -1 : 0
-        })
-        if (log.entries[0][0] < first) first = log.entries[0][0]
-        if (log.entries[logLen - 1][0] > last) last = log.entries[logLen - 1][0]
-      }
-      // else entry.commands[0].log[id] = undefined
+const basename = `${filename}-${iterations}-${start.toFixed(3)}-${step.toFixed(3)}-${syncMin.toFixed(3)}-${matrixId}`,
+  basepath = path.join(__dirname, '..', '..', 'logs', basename)
+
+Promise.resolve()
+  .then(() => {
+    process.stdout.write(`Storing results at ${basepath}...`.yellow)
+    return Promise.promisify(fs.mkdir)(basepath).catch(err => { if (err.code !== 'EEXIST') throw err })
+  })
+  .then(() => { return storeRuleEntries(syncRules.entries, basepath) })
+  .then(() => { return storeRuleEntries(bandRules.entries, basepath) })
+  .then(() => {
+    return new Promise((resolve, reject) => {
+      fs.writeFileSync(path.join(basepath, `${basename}-stats.csv`), stats, (err) => {
+        if (err) reject(err)
+        else {
+          process.stdout.write(`done.\n`.yellow)
+          resolve()
+        }
+      })
     })
-
-    if (entrySize) {
-      const counts = entry.commands[0].counts.sort((a, b) => {
-        a = parseInt(a)
-        b = parseInt(b)
-        return a > b ? 1 : a < b ? -1 : 0
-      }).join(' ')
-
-      let statsEntry = `${entry.id}\t${entrySize}\t`
-      statsEntry += `${entrySize ? first : ''}\t`
-      statsEntry += `${entrySize ? last : ''}\t`
-      statsEntry += `${counts}\n`
-      stats += statsEntry
-      process.stdout.write(statsEntry)
-      fs.writeFileSync(path.join(basepath, `${entry.id}.json`), JSON.stringify(entry.commands[0].log))
-    }
   })
-  fs.writeFileSync(path.join(basepath, `${basename}-stats.csv`), stats)
-  process.exit(0)
-}).catch(err => {
-  Logger.error(err.message)
-  Logger.debug(err.stack, 'cl:analyze')
-  process.exit(err.code)
-})
+  .then(() => {
+    process.stderr.write('\nAnalysis complete, exiting.\n\n'.cyan)
+    process.exit(0)
+  })
+  .catch(err => {
+    process.stderr.write(`\nFatal error code ${err.code} during data analysis: ${err.message}\n`)
+    process.stderr.write(`STACK:\n${err.stack}\n\n`)
+    process.exit(err.code)
+  })

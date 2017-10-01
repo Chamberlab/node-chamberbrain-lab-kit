@@ -5,7 +5,7 @@ class BaseRule {
     this._maxBuffer = 1
   }
   _evaluate () {
-    return true
+    return false
   }
 
   get id () {
@@ -17,10 +17,8 @@ class BaseRule {
   }
   set data (val) {
     if (val) {
-      this._data.unshift(val)
-      if (this.maxBuffer && this._data.length > this.maxBuffer) {
-        this._data = this._data.slice(0, this.maxBuffer)
-      }
+      const len = this._data.unshift(val)
+      if (this.maxBuffer && len > this.maxBuffer) this._data.splice(this.maxBuffer)
     }
     else {
       this._data = []

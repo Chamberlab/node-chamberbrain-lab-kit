@@ -1,21 +1,19 @@
 import assert from 'assert'
 
 class BaseRuleset {
-  constructor (set = []) {
-    this._entries = set
+  constructor (entries = []) {
+    this._entries = Array.isArray(entries) ? entries : []
   }
 
   evaluate (frame, millis) {
-    this._entries.forEach(entry => {
-      entry.rule.data = frame
-      const state = entry.rule.state,
-        result = entry.condition(state)
-      if (result) {
-        entry.commands.forEach(cmd => {
-          cmd.execute(entry.id, millis, state)
-        })
+    for (let entry of this._entries) {
+      // TODO: to copy or not to copy?!
+      entry.rule.data = frame.slice()
+      let state = entry.rule.state
+      if (entry.condition(state)) {
+        for (let cmd of entry.commands) cmd.execute(entry.id, millis, state)
       }
-    })
+    }
   }
 
   get entries () {

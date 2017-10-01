@@ -23,9 +23,7 @@ Promise.map(lmdb.dbIds, function (id) {
   while (entry) {
     for (let i in entry.data) {
       if (i > 0) {
-        if (i - 1 >= plots.length) {
-          plots.push([])
-        }
+        if (i - 1 >= plots.length) plots.push([])
         if (entry.data[i] < valueRange.min) valueRange.min = entry.data[i]
         if (entry.data[i] > valueRange.max) valueRange.max = entry.data[i]
         plots[i - 1].push({key: entry.data[0], value: entry.data[i]})

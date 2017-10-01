@@ -1,4 +1,4 @@
-import BaseCommand from './base-command'
+import BaseCommand from './base'
 
 class LogCommand extends BaseCommand {
   constructor () {
@@ -17,8 +17,8 @@ class LogCommand extends BaseCommand {
   execute (id, ...args) {
     if (!this._log[id] || !Array.isArray(this._log[id].entries)) this._log[id] = { entries: [] }
     this._log[id].entries.push(args)
-    if (args.length > 1 && this._counts.indexOf(Object.keys(args[1]).length) === -1) {
-      this._counts.push(Object.keys(args[1]).length)
+    if (args.length > 1 && this._counts.indexOf(Object.keys(args[1]).filter(key => { return key[0] !== '_' }).length) === -1) {
+      this._counts.push(Object.keys(args[1]).filter(key => { return key[0] !== '_' }).length)
     }
   }
 }

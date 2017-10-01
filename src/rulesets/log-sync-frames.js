@@ -1,7 +1,7 @@
 import BaseRuleset from './base-ruleset'
 import { SynchronousSpikes } from '../rules'
 import { LogCommand } from '../commands'
-import { ChannelMatrix } from '../util'
+import { ChannelMatrix, filters } from '../util'
 
 class LogSyncFrames extends BaseRuleset {
   constructor (matrix = undefined) {
@@ -25,16 +25,14 @@ class LogSyncFrames extends BaseRuleset {
   }
 
   static makeSyncRule (buffer, threshold, absolute, channels, prefix = '') {
-    const sig = Math.sign(threshold) < 0 ? 'neg' : 'pos',
-      group = channels.length ? channels.join('') : '',
-      config = { buffer, threshold, absolute, channels }
-
+    const cstrs = channels.map(c => { return (c.toString().length === 1 ? '0' : '') + c.toString() }),
+      sig = absolute ? 'abs' : Math.sign(threshold) < 0 ? 'neg' : 'pos',
+      group = channels.length ? cstrs.sort().join('') : '',
+      config = { buffer, threshold, absolute, channels, group }
     return {
-      id: `group_${prefix}_${group}_sync_${buffer}_${absolute ? 'abs' : sig}_${threshold.toFixed(3)}`,
+      id: `group_${prefix}_${group}_sync_${buffer}_${sig}_${threshold.toFixed(3)}`,
       rule: new SynchronousSpikes(config),
-      condition: function (result) {
-        return Object.keys(result).filter(key => { return key[0] !== '_' }).length > 1
-      },
+      condition: (result) => { return filters.removePrefixedFromArray(Object.keys(result || {})).length > 1 },
       commands: [new LogCommand()]
     }
   }

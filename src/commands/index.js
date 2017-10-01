@@ -1,5 +1,7 @@
-import LogCommand from './log-command'
+import LogCommand from './log'
+import SelectNoteCOF from './select-note-cof'
 
 export {
-  LogCommand
+  LogCommand,
+  SelectNoteCOF
 }

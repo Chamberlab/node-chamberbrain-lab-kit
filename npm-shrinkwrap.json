@@ -1034,7 +1034,7 @@
         "svg2png": "4.1.1",
         "through": "2.3.8",
         "tiny-emitter": "2.0.2",
-        "tonal": "1.0.0-0",
+        "tonal": "0.69.6",
         "uuid-validate": "0.0.2",
         "uuid4": "1.0.0"
       },
@@ -2981,6 +2981,10 @@
               "bundled": true
             }
           }
+        },
+        "babel-plugin-add-module-exports": {
+          "version": "0.2.1",
+          "bundled": true
         },
         "babel-preset-env": {
           "version": "1.6.0",
@@ -11568,56 +11572,72 @@
           "bundled": true
         },
         "tonal": {
-          "version": "1.0.0-0",
+          "version": "0.69.6",
           "bundled": true,
           "requires": {
-            "tonal-chord": "1.0.0-0",
-            "tonal-dictionary": "1.0.0-0",
-            "tonal-distance": "1.0.0-0",
-            "tonal-interval": "1.0.0-0",
-            "tonal-key": "1.0.0-0",
-            "tonal-note": "1.0.0-0",
-            "tonal-pcset": "1.0.0-0",
+            "tonal-array": "0.69.7",
+            "tonal-chord": "0.69.9",
+            "tonal-distance": "0.69.7",
+            "tonal-filter": "0.69.6",
+            "tonal-freq": "0.69.9",
+            "tonal-harmonizer": "0.69.7",
+            "tonal-interval": "0.69.9",
+            "tonal-key": "0.69.9",
+            "tonal-midi": "0.69.7",
+            "tonal-notation": "0.69.7",
+            "tonal-note": "0.69.9",
+            "tonal-pcset": "0.69.9",
+            "tonal-pitch": "0.69.7",
+            "tonal-pitchset": "0.69.9",
+            "tonal-progression": "0.69.9",
             "tonal-range": "0.69.9",
-            "tonal-scale": "1.0.0-0"
+            "tonal-scale": "0.69.9",
+            "tonal-sonority": "0.69.9",
+            "tonal-transpose": "0.69.7"
           }
         },
         "tonal-array": {
-          "version": "1.0.0-0",
+          "version": "0.69.7",
           "bundled": true,
           "requires": {
-            "tonal-note": "1.0.0-0"
+            "tonal-distance": "0.69.7",
+            "tonal-pitch": "0.69.7",
+            "tonal-transpose": "0.69.7"
           }
         },
         "tonal-chord": {
-          "version": "1.0.0-0",
+          "version": "0.69.9",
           "bundled": true,
           "requires": {
-            "tonal-dictionary": "1.0.0-0",
-            "tonal-distance": "1.0.0-0",
-            "tonal-note": "1.0.0-0",
-            "tonal-pcset": "1.0.0-0"
+            "note-parser": "2.0.1",
+            "tonal-array": "0.69.7",
+            "tonal-dictionary": "0.69.9",
+            "tonal-harmonizer": "0.69.7",
+            "tonal-note": "0.69.9"
           }
         },
         "tonal-dictionary": {
-          "version": "1.0.0-0",
+          "version": "0.69.9",
           "bundled": true,
           "requires": {
-            "tonal-array": "1.0.0-0",
-            "tonal-note": "1.0.0-0",
-            "tonal-pcset": "1.0.0-0"
+            "tonal-array": "0.69.7",
+            "tonal-note": "0.69.9",
+            "tonal-pcset": "0.69.9"
           }
         },
         "tonal-distance": {
-          "version": "1.0.0-0",
+          "version": "0.69.7",
           "bundled": true,
           "requires": {
-            "tonal-interval": "1.0.0-0",
-            "tonal-note": "1.0.0-0"
+            "tonal-pitch": "0.69.7"
           }
         },
         "tonal-encoding": {
           "version": "0.69.7",
+          "bundled": true
+        },
+        "tonal-filter": {
+          "version": "0.69.6",
           "bundled": true
         },
         "tonal-freq": {
@@ -11627,17 +11647,33 @@
             "tonal-midi": "0.69.7"
           }
         },
-        "tonal-interval": {
-          "version": "1.0.0-0",
-          "bundled": true
-        },
-        "tonal-key": {
-          "version": "1.0.0-0",
+        "tonal-harmonizer": {
+          "version": "0.69.7",
           "bundled": true,
           "requires": {
-            "tonal-array": "1.0.0-0",
-            "tonal-distance": "1.0.0-0",
-            "tonal-note": "1.0.0-0"
+            "tonal-array": "0.69.7",
+            "tonal-distance": "0.69.7",
+            "tonal-transpose": "0.69.7"
+          }
+        },
+        "tonal-interval": {
+          "version": "0.69.9",
+          "bundled": true,
+          "requires": {
+            "interval-notation": "1.0.1",
+            "tonal-pitch": "0.69.7"
+          }
+        },
+        "tonal-key": {
+          "version": "0.69.9",
+          "bundled": true,
+          "requires": {
+            "tonal-array": "0.69.7",
+            "tonal-harmonizer": "0.69.7",
+            "tonal-notation": "0.69.7",
+            "tonal-note": "0.69.9",
+            "tonal-range": "0.69.9",
+            "tonal-transpose": "0.69.7"
           }
         },
         "tonal-midi": {
@@ -11647,17 +11683,29 @@
             "note-parser": "2.0.1"
           }
         },
-        "tonal-note": {
-          "version": "1.0.0-0",
+        "tonal-notation": {
+          "version": "0.69.7",
           "bundled": true
         },
-        "tonal-pcset": {
-          "version": "1.0.0-0",
+        "tonal-note": {
+          "version": "0.69.9",
           "bundled": true,
           "requires": {
-            "tonal-array": "1.0.0-0",
-            "tonal-interval": "1.0.0-0",
-            "tonal-note": "1.0.0-0"
+            "note-parser": "2.0.1",
+            "tonal-freq": "0.69.9",
+            "tonal-midi": "0.69.7",
+            "tonal-pitch": "0.69.7",
+            "tonal-transpose": "0.69.7"
+          }
+        },
+        "tonal-pcset": {
+          "version": "0.69.9",
+          "bundled": true,
+          "requires": {
+            "tonal-array": "0.69.7",
+            "tonal-note": "0.69.9",
+            "tonal-pitch": "0.69.7",
+            "tonal-transpose": "0.69.7"
           }
         },
         "tonal-pitch": {
@@ -11669,6 +11717,29 @@
             "tonal-encoding": "0.69.7"
           }
         },
+        "tonal-pitchset": {
+          "version": "0.69.9",
+          "bundled": true,
+          "requires": {
+            "tonal-array": "0.69.7",
+            "tonal-note": "0.69.9",
+            "tonal-pitch": "0.69.7",
+            "tonal-transpose": "0.69.7"
+          }
+        },
+        "tonal-progression": {
+          "version": "0.69.9",
+          "bundled": true,
+          "requires": {
+            "tonal-array": "0.69.7",
+            "tonal-chord": "0.69.9",
+            "tonal-distance": "0.69.7",
+            "tonal-interval": "0.69.9",
+            "tonal-notation": "0.69.7",
+            "tonal-note": "0.69.9",
+            "tonal-transpose": "0.69.7"
+          }
+        },
         "tonal-range": {
           "version": "0.69.9",
           "bundled": true,
@@ -11678,56 +11749,25 @@
             "tonal-note": "0.69.9",
             "tonal-pcset": "0.69.9",
             "tonal-transpose": "0.69.7"
-          },
-          "dependencies": {
-            "tonal-array": {
-              "version": "0.69.7",
-              "bundled": true,
-              "requires": {
-                "tonal-distance": "0.69.7",
-                "tonal-pitch": "0.69.7",
-                "tonal-transpose": "0.69.7"
-              }
-            },
-            "tonal-distance": {
-              "version": "0.69.7",
-              "bundled": true,
-              "requires": {
-                "tonal-pitch": "0.69.7"
-              }
-            },
-            "tonal-note": {
-              "version": "0.69.9",
-              "bundled": true,
-              "requires": {
-                "note-parser": "2.0.1",
-                "tonal-freq": "0.69.9",
-                "tonal-midi": "0.69.7",
-                "tonal-pitch": "0.69.7",
-                "tonal-transpose": "0.69.7"
-              }
-            },
-            "tonal-pcset": {
-              "version": "0.69.9",
-              "bundled": true,
-              "requires": {
-                "tonal-array": "0.69.7",
-                "tonal-note": "0.69.9",
-                "tonal-pitch": "0.69.7",
-                "tonal-transpose": "0.69.7"
-              }
-            }
           }
         },
         "tonal-scale": {
-          "version": "1.0.0-0",
+          "version": "0.69.9",
           "bundled": true,
           "requires": {
-            "tonal-array": "1.0.0-0",
-            "tonal-dictionary": "1.0.0-0",
-            "tonal-distance": "1.0.0-0",
-            "tonal-note": "1.0.0-0",
-            "tonal-pcset": "1.0.0-0"
+            "tonal-array": "0.69.7",
+            "tonal-dictionary": "0.69.9",
+            "tonal-harmonizer": "0.69.7",
+            "tonal-note": "0.69.9"
+          }
+        },
+        "tonal-sonority": {
+          "version": "0.69.9",
+          "bundled": true,
+          "requires": {
+            "tonal-array": "0.69.7",
+            "tonal-interval": "0.69.9",
+            "tonal-pitch": "0.69.7"
           }
         },
         "tonal-transpose": {
@@ -17144,63 +17184,125 @@
       "integrity": "sha1-uDVx+k2MJbguIxsG46MFXeTKGkc="
     },
     "tonal": {
-      "version": "1.0.0-0",
-      "resolved": "https://registry.npmjs.org/tonal/-/tonal-1.0.0-0.tgz",
-      "integrity": "sha1-Slq2K73BKk8dIMZndz1/EOVCDPg=",
+      "version": "0.69.6",
+      "resolved": "https://registry.npmjs.org/tonal/-/tonal-0.69.6.tgz",
+      "integrity": "sha1-1Nwpwq7Sg0Wb+r7rSipQAIK9bts=",
       "requires": {
-        "tonal-chord": "1.0.0-0",
-        "tonal-dictionary": "1.0.0-0",
-        "tonal-distance": "1.0.0-0",
-        "tonal-interval": "1.0.0-0",
-        "tonal-key": "1.0.0-0",
-        "tonal-note": "1.0.0-0",
-        "tonal-pcset": "1.0.0-0",
+        "tonal-array": "0.69.7",
+        "tonal-chord": "0.69.9",
+        "tonal-distance": "0.69.7",
+        "tonal-filter": "0.69.6",
+        "tonal-freq": "0.69.9",
+        "tonal-harmonizer": "0.69.7",
+        "tonal-interval": "0.69.9",
+        "tonal-key": "0.69.9",
+        "tonal-midi": "0.69.7",
+        "tonal-notation": "0.69.7",
+        "tonal-note": "0.69.9",
+        "tonal-pcset": "0.69.9",
+        "tonal-pitch": "0.69.7",
+        "tonal-pitchset": "0.69.9",
+        "tonal-progression": "0.69.9",
         "tonal-range": "0.69.9",
-        "tonal-scale": "1.0.0-0"
-      }
-    },
-    "tonal-array": {
-      "version": "1.0.0-0",
-      "resolved": "https://registry.npmjs.org/tonal-array/-/tonal-array-1.0.0-0.tgz",
-      "integrity": "sha1-4USvVq6UZUWx/47rDODYXGNVI1U=",
-      "requires": {
-        "tonal-note": "1.0.0-0"
-      }
-    },
-    "tonal-chord": {
-      "version": "1.0.0-0",
-      "resolved": "https://registry.npmjs.org/tonal-chord/-/tonal-chord-1.0.0-0.tgz",
-      "integrity": "sha1-JfdkfFPD0MnEakVEU9aBVCEuIoA=",
-      "requires": {
-        "tonal-dictionary": "1.0.0-0",
-        "tonal-distance": "1.0.0-0",
-        "tonal-note": "1.0.0-0",
-        "tonal-pcset": "1.0.0-0"
-      }
-    },
-    "tonal-dictionary": {
-      "version": "1.0.0-0",
-      "resolved": "https://registry.npmjs.org/tonal-dictionary/-/tonal-dictionary-1.0.0-0.tgz",
-      "integrity": "sha1-Dv3UaJ3HExPbIIZWYBI7l3WsZx4=",
-      "requires": {
-        "tonal-array": "1.0.0-0",
-        "tonal-note": "1.0.0-0",
-        "tonal-pcset": "1.0.0-0"
-      }
-    },
-    "tonal-distance": {
-      "version": "1.0.0-0",
-      "resolved": "https://registry.npmjs.org/tonal-distance/-/tonal-distance-1.0.0-0.tgz",
-      "integrity": "sha1-ElVIHhG2910T01usTzTB8XBKOeg=",
-      "requires": {
-        "tonal-interval": "1.0.0-0",
-        "tonal-note": "1.0.0-0"
+        "tonal-scale": "0.69.9",
+        "tonal-sonority": "0.69.9",
+        "tonal-transpose": "0.69.7"
+      },
+      "dependencies": {
+        "tonal-array": {
+          "version": "0.69.7",
+          "resolved": "https://registry.npmjs.org/tonal-array/-/tonal-array-0.69.7.tgz",
+          "integrity": "sha1-+TcrnBMq1uBkvYh5IiMvLOMjb/0=",
+          "requires": {
+            "tonal-distance": "0.69.7",
+            "tonal-pitch": "0.69.7",
+            "tonal-transpose": "0.69.7"
+          }
+        },
+        "tonal-chord": {
+          "version": "0.69.9",
+          "resolved": "https://registry.npmjs.org/tonal-chord/-/tonal-chord-0.69.9.tgz",
+          "integrity": "sha1-wcQpee/QGVMDlbe8mpK6kN46S7Q=",
+          "requires": {
+            "note-parser": "2.0.1",
+            "tonal-array": "0.69.7",
+            "tonal-dictionary": "0.69.9",
+            "tonal-harmonizer": "0.69.7",
+            "tonal-note": "0.69.9"
+          }
+        },
+        "tonal-dictionary": {
+          "version": "0.69.9",
+          "resolved": "https://registry.npmjs.org/tonal-dictionary/-/tonal-dictionary-0.69.9.tgz",
+          "integrity": "sha1-5dini41SkDk0E/ZecpwW6UQCPGE=",
+          "requires": {
+            "tonal-array": "0.69.7",
+            "tonal-note": "0.69.9",
+            "tonal-pcset": "0.69.9"
+          }
+        },
+        "tonal-distance": {
+          "version": "0.69.7",
+          "resolved": "https://registry.npmjs.org/tonal-distance/-/tonal-distance-0.69.7.tgz",
+          "integrity": "sha1-6PNkWa1vwlTEArWbICJArSufCmo=",
+          "requires": {
+            "tonal-pitch": "0.69.7"
+          }
+        },
+        "tonal-interval": {
+          "version": "0.69.9",
+          "resolved": "https://registry.npmjs.org/tonal-interval/-/tonal-interval-0.69.9.tgz",
+          "integrity": "sha1-GrXTfWjKOt1HLQ/B/PFO+73s/Do=",
+          "requires": {
+            "interval-notation": "1.0.1",
+            "tonal-pitch": "0.69.7"
+          }
+        },
+        "tonal-note": {
+          "version": "0.69.9",
+          "resolved": "https://registry.npmjs.org/tonal-note/-/tonal-note-0.69.9.tgz",
+          "integrity": "sha1-lE1b76EB7+FHnQw+Yw3FWbgUjfg=",
+          "requires": {
+            "note-parser": "2.0.1",
+            "tonal-freq": "0.69.9",
+            "tonal-midi": "0.69.7",
+            "tonal-pitch": "0.69.7",
+            "tonal-transpose": "0.69.7"
+          }
+        },
+        "tonal-pcset": {
+          "version": "0.69.9",
+          "resolved": "https://registry.npmjs.org/tonal-pcset/-/tonal-pcset-0.69.9.tgz",
+          "integrity": "sha1-53QPcLkqBIj+NVEcLnyuMz9adhc=",
+          "requires": {
+            "tonal-array": "0.69.7",
+            "tonal-note": "0.69.9",
+            "tonal-pitch": "0.69.7",
+            "tonal-transpose": "0.69.7"
+          }
+        },
+        "tonal-scale": {
+          "version": "0.69.9",
+          "resolved": "https://registry.npmjs.org/tonal-scale/-/tonal-scale-0.69.9.tgz",
+          "integrity": "sha1-eNX4Z5lAV27qwF5GHjyp/N+qn24=",
+          "requires": {
+            "tonal-array": "0.69.7",
+            "tonal-dictionary": "0.69.9",
+            "tonal-harmonizer": "0.69.7",
+            "tonal-note": "0.69.9"
+          }
+        }
       }
     },
     "tonal-encoding": {
       "version": "0.69.7",
       "resolved": "https://registry.npmjs.org/tonal-encoding/-/tonal-encoding-0.69.7.tgz",
       "integrity": "sha1-YUHXy+JJ+VgGY1WTsebvdfu4Efk="
+    },
+    "tonal-filter": {
+      "version": "0.69.6",
+      "resolved": "https://registry.npmjs.org/tonal-filter/-/tonal-filter-0.69.6.tgz",
+      "integrity": "sha1-ScSV/cqgSptNcx07ALo+CF2gzSI="
     },
     "tonal-freq": {
       "version": "0.69.9",
@@ -17210,19 +17312,79 @@
         "tonal-midi": "0.69.7"
       }
     },
-    "tonal-interval": {
-      "version": "1.0.0-0",
-      "resolved": "https://registry.npmjs.org/tonal-interval/-/tonal-interval-1.0.0-0.tgz",
-      "integrity": "sha1-9fgHHVgIFFoipyVP98x3G9v82ms="
+    "tonal-harmonizer": {
+      "version": "0.69.7",
+      "resolved": "https://registry.npmjs.org/tonal-harmonizer/-/tonal-harmonizer-0.69.7.tgz",
+      "integrity": "sha1-9lcDLZyzvdbyxqcUVbWM2UHlTV0=",
+      "requires": {
+        "tonal-array": "0.69.7",
+        "tonal-distance": "0.69.7",
+        "tonal-transpose": "0.69.7"
+      },
+      "dependencies": {
+        "tonal-array": {
+          "version": "0.69.7",
+          "resolved": "https://registry.npmjs.org/tonal-array/-/tonal-array-0.69.7.tgz",
+          "integrity": "sha1-+TcrnBMq1uBkvYh5IiMvLOMjb/0=",
+          "requires": {
+            "tonal-distance": "0.69.7",
+            "tonal-pitch": "0.69.7",
+            "tonal-transpose": "0.69.7"
+          }
+        },
+        "tonal-distance": {
+          "version": "0.69.7",
+          "resolved": "https://registry.npmjs.org/tonal-distance/-/tonal-distance-0.69.7.tgz",
+          "integrity": "sha1-6PNkWa1vwlTEArWbICJArSufCmo=",
+          "requires": {
+            "tonal-pitch": "0.69.7"
+          }
+        }
+      }
     },
     "tonal-key": {
-      "version": "1.0.0-0",
-      "resolved": "https://registry.npmjs.org/tonal-key/-/tonal-key-1.0.0-0.tgz",
-      "integrity": "sha1-RSLT/LtUlpvdj65WCuBSDRfZMpY=",
+      "version": "0.69.9",
+      "resolved": "https://registry.npmjs.org/tonal-key/-/tonal-key-0.69.9.tgz",
+      "integrity": "sha1-tXiSarm0tpAaf0jvWjz7sYdwpzo=",
       "requires": {
-        "tonal-array": "1.0.0-0",
-        "tonal-distance": "1.0.0-0",
-        "tonal-note": "1.0.0-0"
+        "tonal-array": "0.69.7",
+        "tonal-harmonizer": "0.69.7",
+        "tonal-notation": "0.69.7",
+        "tonal-note": "0.69.9",
+        "tonal-range": "0.69.9",
+        "tonal-transpose": "0.69.7"
+      },
+      "dependencies": {
+        "tonal-array": {
+          "version": "0.69.7",
+          "resolved": "https://registry.npmjs.org/tonal-array/-/tonal-array-0.69.7.tgz",
+          "integrity": "sha1-+TcrnBMq1uBkvYh5IiMvLOMjb/0=",
+          "requires": {
+            "tonal-distance": "0.69.7",
+            "tonal-pitch": "0.69.7",
+            "tonal-transpose": "0.69.7"
+          }
+        },
+        "tonal-distance": {
+          "version": "0.69.7",
+          "resolved": "https://registry.npmjs.org/tonal-distance/-/tonal-distance-0.69.7.tgz",
+          "integrity": "sha1-6PNkWa1vwlTEArWbICJArSufCmo=",
+          "requires": {
+            "tonal-pitch": "0.69.7"
+          }
+        },
+        "tonal-note": {
+          "version": "0.69.9",
+          "resolved": "https://registry.npmjs.org/tonal-note/-/tonal-note-0.69.9.tgz",
+          "integrity": "sha1-lE1b76EB7+FHnQw+Yw3FWbgUjfg=",
+          "requires": {
+            "note-parser": "2.0.1",
+            "tonal-freq": "0.69.9",
+            "tonal-midi": "0.69.7",
+            "tonal-pitch": "0.69.7",
+            "tonal-transpose": "0.69.7"
+          }
+        }
       }
     },
     "tonal-midi": {
@@ -17233,20 +17395,10 @@
         "note-parser": "2.0.1"
       }
     },
-    "tonal-note": {
-      "version": "1.0.0-0",
-      "resolved": "https://registry.npmjs.org/tonal-note/-/tonal-note-1.0.0-0.tgz",
-      "integrity": "sha1-M7yn4p50Y8EbSCNu1GKeB71yOYo="
-    },
-    "tonal-pcset": {
-      "version": "1.0.0-0",
-      "resolved": "https://registry.npmjs.org/tonal-pcset/-/tonal-pcset-1.0.0-0.tgz",
-      "integrity": "sha1-FMi6E2GzMmzZSmN874QECtq7r7w=",
-      "requires": {
-        "tonal-array": "1.0.0-0",
-        "tonal-interval": "1.0.0-0",
-        "tonal-note": "1.0.0-0"
-      }
+    "tonal-notation": {
+      "version": "0.69.7",
+      "resolved": "https://registry.npmjs.org/tonal-notation/-/tonal-notation-0.69.7.tgz",
+      "integrity": "sha1-za4vBV6eETnnRfo4RsClWysLfdg="
     },
     "tonal-pitch": {
       "version": "0.69.7",
@@ -17256,6 +17408,137 @@
         "interval-notation": "1.0.1",
         "note-parser": "2.0.1",
         "tonal-encoding": "0.69.7"
+      }
+    },
+    "tonal-pitchset": {
+      "version": "0.69.9",
+      "resolved": "https://registry.npmjs.org/tonal-pitchset/-/tonal-pitchset-0.69.9.tgz",
+      "integrity": "sha1-kJH0QqJxOdFg10acEc2SzXbMaIQ=",
+      "requires": {
+        "tonal-array": "0.69.7",
+        "tonal-note": "0.69.9",
+        "tonal-pitch": "0.69.7",
+        "tonal-transpose": "0.69.7"
+      },
+      "dependencies": {
+        "tonal-array": {
+          "version": "0.69.7",
+          "resolved": "https://registry.npmjs.org/tonal-array/-/tonal-array-0.69.7.tgz",
+          "integrity": "sha1-+TcrnBMq1uBkvYh5IiMvLOMjb/0=",
+          "requires": {
+            "tonal-distance": "0.69.7",
+            "tonal-pitch": "0.69.7",
+            "tonal-transpose": "0.69.7"
+          }
+        },
+        "tonal-distance": {
+          "version": "0.69.7",
+          "resolved": "https://registry.npmjs.org/tonal-distance/-/tonal-distance-0.69.7.tgz",
+          "integrity": "sha1-6PNkWa1vwlTEArWbICJArSufCmo=",
+          "requires": {
+            "tonal-pitch": "0.69.7"
+          }
+        },
+        "tonal-note": {
+          "version": "0.69.9",
+          "resolved": "https://registry.npmjs.org/tonal-note/-/tonal-note-0.69.9.tgz",
+          "integrity": "sha1-lE1b76EB7+FHnQw+Yw3FWbgUjfg=",
+          "requires": {
+            "note-parser": "2.0.1",
+            "tonal-freq": "0.69.9",
+            "tonal-midi": "0.69.7",
+            "tonal-pitch": "0.69.7",
+            "tonal-transpose": "0.69.7"
+          }
+        }
+      }
+    },
+    "tonal-progression": {
+      "version": "0.69.9",
+      "resolved": "https://registry.npmjs.org/tonal-progression/-/tonal-progression-0.69.9.tgz",
+      "integrity": "sha1-JN8IRuBND0Lqb/dCmejkjcoKHsY=",
+      "requires": {
+        "tonal-array": "0.69.7",
+        "tonal-chord": "0.69.9",
+        "tonal-distance": "0.69.7",
+        "tonal-interval": "0.69.9",
+        "tonal-notation": "0.69.7",
+        "tonal-note": "0.69.9",
+        "tonal-transpose": "0.69.7"
+      },
+      "dependencies": {
+        "tonal-array": {
+          "version": "0.69.7",
+          "resolved": "https://registry.npmjs.org/tonal-array/-/tonal-array-0.69.7.tgz",
+          "integrity": "sha1-+TcrnBMq1uBkvYh5IiMvLOMjb/0=",
+          "requires": {
+            "tonal-distance": "0.69.7",
+            "tonal-pitch": "0.69.7",
+            "tonal-transpose": "0.69.7"
+          }
+        },
+        "tonal-chord": {
+          "version": "0.69.9",
+          "resolved": "https://registry.npmjs.org/tonal-chord/-/tonal-chord-0.69.9.tgz",
+          "integrity": "sha1-wcQpee/QGVMDlbe8mpK6kN46S7Q=",
+          "requires": {
+            "note-parser": "2.0.1",
+            "tonal-array": "0.69.7",
+            "tonal-dictionary": "0.69.9",
+            "tonal-harmonizer": "0.69.7",
+            "tonal-note": "0.69.9"
+          }
+        },
+        "tonal-dictionary": {
+          "version": "0.69.9",
+          "resolved": "https://registry.npmjs.org/tonal-dictionary/-/tonal-dictionary-0.69.9.tgz",
+          "integrity": "sha1-5dini41SkDk0E/ZecpwW6UQCPGE=",
+          "requires": {
+            "tonal-array": "0.69.7",
+            "tonal-note": "0.69.9",
+            "tonal-pcset": "0.69.9"
+          }
+        },
+        "tonal-distance": {
+          "version": "0.69.7",
+          "resolved": "https://registry.npmjs.org/tonal-distance/-/tonal-distance-0.69.7.tgz",
+          "integrity": "sha1-6PNkWa1vwlTEArWbICJArSufCmo=",
+          "requires": {
+            "tonal-pitch": "0.69.7"
+          }
+        },
+        "tonal-interval": {
+          "version": "0.69.9",
+          "resolved": "https://registry.npmjs.org/tonal-interval/-/tonal-interval-0.69.9.tgz",
+          "integrity": "sha1-GrXTfWjKOt1HLQ/B/PFO+73s/Do=",
+          "requires": {
+            "interval-notation": "1.0.1",
+            "tonal-pitch": "0.69.7"
+          }
+        },
+        "tonal-note": {
+          "version": "0.69.9",
+          "resolved": "https://registry.npmjs.org/tonal-note/-/tonal-note-0.69.9.tgz",
+          "integrity": "sha1-lE1b76EB7+FHnQw+Yw3FWbgUjfg=",
+          "requires": {
+            "note-parser": "2.0.1",
+            "tonal-freq": "0.69.9",
+            "tonal-midi": "0.69.7",
+            "tonal-pitch": "0.69.7",
+            "tonal-transpose": "0.69.7"
+          }
+        },
+        "tonal-pcset": {
+          "version": "0.69.9",
+          "resolved": "https://registry.npmjs.org/tonal-pcset/-/tonal-pcset-0.69.9.tgz",
+          "integrity": "sha1-53QPcLkqBIj+NVEcLnyuMz9adhc=",
+          "requires": {
+            "tonal-array": "0.69.7",
+            "tonal-note": "0.69.9",
+            "tonal-pitch": "0.69.7",
+            "tonal-transpose": "0.69.7"
+          }
+        }
       }
     },
     "tonal-range": {
@@ -17313,16 +17596,43 @@
         }
       }
     },
-    "tonal-scale": {
-      "version": "1.0.0-0",
-      "resolved": "https://registry.npmjs.org/tonal-scale/-/tonal-scale-1.0.0-0.tgz",
-      "integrity": "sha1-8an2p1t1fWL83YjjuJa74guUnAA=",
+    "tonal-sonority": {
+      "version": "0.69.9",
+      "resolved": "https://registry.npmjs.org/tonal-sonority/-/tonal-sonority-0.69.9.tgz",
+      "integrity": "sha1-nZKALK1fChSA8YfFH8Nzlr/CLC8=",
       "requires": {
-        "tonal-array": "1.0.0-0",
-        "tonal-dictionary": "1.0.0-0",
-        "tonal-distance": "1.0.0-0",
-        "tonal-note": "1.0.0-0",
-        "tonal-pcset": "1.0.0-0"
+        "tonal-array": "0.69.7",
+        "tonal-interval": "0.69.9",
+        "tonal-pitch": "0.69.7"
+      },
+      "dependencies": {
+        "tonal-array": {
+          "version": "0.69.7",
+          "resolved": "https://registry.npmjs.org/tonal-array/-/tonal-array-0.69.7.tgz",
+          "integrity": "sha1-+TcrnBMq1uBkvYh5IiMvLOMjb/0=",
+          "requires": {
+            "tonal-distance": "0.69.7",
+            "tonal-pitch": "0.69.7",
+            "tonal-transpose": "0.69.7"
+          }
+        },
+        "tonal-distance": {
+          "version": "0.69.7",
+          "resolved": "https://registry.npmjs.org/tonal-distance/-/tonal-distance-0.69.7.tgz",
+          "integrity": "sha1-6PNkWa1vwlTEArWbICJArSufCmo=",
+          "requires": {
+            "tonal-pitch": "0.69.7"
+          }
+        },
+        "tonal-interval": {
+          "version": "0.69.9",
+          "resolved": "https://registry.npmjs.org/tonal-interval/-/tonal-interval-0.69.9.tgz",
+          "integrity": "sha1-GrXTfWjKOt1HLQ/B/PFO+73s/Do=",
+          "requires": {
+            "interval-notation": "1.0.1",
+            "tonal-pitch": "0.69.7"
+          }
+        }
       }
     },
     "tonal-transpose": {

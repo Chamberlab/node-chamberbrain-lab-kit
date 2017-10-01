@@ -1,7 +1,7 @@
 import BaseRuleset from './base-ruleset'
 import { SpikeBands } from '../rules'
 import { LogCommand } from '../commands'
-import { ChannelMatrix } from '../util'
+import { ChannelMatrix, filters } from '../util'
 
 class LogBandFrames extends BaseRuleset {
   constructor (matrix = undefined) {
@@ -25,16 +25,14 @@ class LogBandFrames extends BaseRuleset {
   }
 
   static makeBandRule (buffer, band, absolute, channels, prefix = '') {
-    const sig = Math.sign(band.high) < 0 ? 'neg' : 'pos',
-      group = channels.length ? channels.join('') : '',
-      config = { buffer, band, absolute, channels }
-
+    const cstrs = channels.map(c => { return (c.toString().length === 1 ? '0' : '') + c.toString() }),
+      sig = Math.sign(band.high) < 0 ? 'neg' : 'pos',
+      group = channels.length ? cstrs.sort().join('') : '',
+      config = { buffer, band, absolute, channels, group }
     return {
       id: `group_${prefix}_${group}_band_${buffer}_${absolute ? 'abs' : sig}_${band.low.toFixed(3)}x${band.high.toFixed(3)}`,
       rule: new SpikeBands(config),
-      condition: function (result) {
-        return Object.keys(result).filter(key => { return key[0] !== '_' }).length > 0
-      },
+      condition: (result) => { return filters.removePrefixedFromArray(Object.keys(result || {})).length > 0 },
       commands: [new LogCommand()]
     }
   }
