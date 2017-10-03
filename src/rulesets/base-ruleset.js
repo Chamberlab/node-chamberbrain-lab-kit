@@ -17,17 +17,16 @@ class BaseRuleset {
     else this.grouping.push([])
   }
 
-  evaluate (frame, millis) {
+  evaluate (frame, key) {
     const data = []
     for (let v of frame) data.push(v)
     for (let entryId in this._entries) {
       const entry = this._entries[entryId]
-      // TODO: to copy or not to copy?!
       entry.rule.data = data
       let state = entry.rule.state
       if (entry.condition(state)) {
         for (let cmd of entry.commands) {
-          cmd.execute(entry.id, millis, state)
+          cmd.execute(entry.id, key, state)
         }
       }
     }
