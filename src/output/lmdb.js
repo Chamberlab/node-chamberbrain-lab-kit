@@ -105,7 +105,7 @@ class LMDB {
     assert.notEqual(typeof txn, 'undefined', msgs.no_txn)
     assert.notEqual(typeof this._meta[dbId].cursor, 'undefined', msgs.no_cursor)
     if (!this._meta[dbId].cursor.key) {
-      return {key: null, data: null}
+      return null
     }
     const buffer = txn.getBinary(this._meta[dbId].dbi, this._meta[dbId].cursor.key)
     let data = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength)
