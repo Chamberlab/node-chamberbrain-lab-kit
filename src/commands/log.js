@@ -1,10 +1,11 @@
 import BaseCommand from './base'
+import * as filters from '../util/filter'
 
 class LogCommand extends BaseCommand {
   constructor () {
     super('log')
     this._log = {}
-    this._counts = []
+    this._counts = {}
   }
 
   get log () {
@@ -15,10 +16,19 @@ class LogCommand extends BaseCommand {
   }
 
   execute (id, ...args) {
-    if (!this._log[id] || !Array.isArray(this._log[id].entries)) this._log[id] = { entries: [] }
-    this._log[id].entries.push(args)
-    if (args.length > 1 && this._counts.indexOf(Object.keys(args[1]).filter(key => { return key[0] !== '_' }).length) === -1) {
-      this._counts.push(Object.keys(args[1]).filter(key => { return key[0] !== '_' }).length)
+    if (args.length > 1) {
+      if (!this._log[id] || !Array.isArray(this._log[id].entries)) this._log[id] = {entries: []}
+      const dataCopy = [args[0], Object.assign({}, args[1])],
+        count = filters.removePrefixedFromArray(Object.keys(dataCopy[1])).length.toString()
+      this._log[id].entries.push(dataCopy)
+      if (count !== '0') {
+        if (typeof this._counts[count] === 'number') {
+          this._counts[count]++
+        }
+        else {
+          this._counts[count] = 1
+        }
+      }
     }
   }
 }
