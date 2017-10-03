@@ -7,12 +7,17 @@ class MIDI {
     const tracks = []
     for (let gid in notes) {
       const track = new data.Track([], `${gid}`, gid)
-      for (let ms of notes[gid]) {
+      for (let ms in notes[gid]) {
         notes[gid][ms].forEach(note => {
-          const nte = new harmonics.Note(note)
-          nte.fromString(note)
-          const te = new events.TonalEvent(`${ms}ms`, nte, `${durationMs}ms`)
-          track.push(te)
+          if (note) {
+            const nte = new harmonics.Note(note)
+            nte.fromString(note)
+            const te = new events.TonalEvent(`${ms} ms`, nte, `${durationMs} ms`)
+            track.push(te)
+          }
+          else {
+            process.stderr.write('Warning: Ignoring attempt to add empty note\n')
+          }
         })
       }
       tracks.push(track)
