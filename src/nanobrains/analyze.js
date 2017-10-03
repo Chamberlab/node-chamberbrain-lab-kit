@@ -39,18 +39,14 @@ for (let group of syncRules.grouping) {
 lmdb.openEnv(infile)
 for (let id of lmdb.dbIds) {
   process.stdout.write(`Reading and processing from LMDB ${id}...`.yellow)
-  let txn, idx, entry
+  let txn, entry
   lmdb.openDb(id)
   txn = lmdb.beginTxn(true)
   lmdb.initCursor(txn, id)
   while ((entry = lmdb.getCursorData(txn, id, false))) {
-    idx = parseFloat(entry.key)
-    let data = [], sub = entry.data.subarray(1)
-    for (let i in sub) {
-      data.push(sub[i])
-    }
-    bandRules.evaluate(data, idx)
-    syncRules.evaluate(data, idx)
+    let sub = entry.data.subarray(1)
+    bandRules.evaluate(sub, entry.key)
+    syncRules.evaluate(sub, entry.key)
     lmdb.advanceCursor(id, false)
   }
   process.stdout.write(`done.\n`.yellow)

@@ -1,14 +1,16 @@
 import harmonics from 'chamberlib/dist/harmonics'
 import events from 'chamberlib/dist/events'
 import data from 'chamberlib/dist/data'
+import LMDB from '../output/lmdb'
 
 class MIDI {
   static notesToMidi (notes, durationMs = 20, filename) {
     const tracks = []
     for (let gid in notes) {
       const track = new data.Track([], `${gid}`, gid)
-      for (let ms in notes[gid]) {
-        notes[gid][ms].forEach(note => {
+      for (let key in notes[gid]) {
+        let ms = LMDB.parseKey(key).round()
+        notes[gid][key].forEach(note => {
           if (note) {
             const nte = new harmonics.Note(note)
             nte.fromString(note)

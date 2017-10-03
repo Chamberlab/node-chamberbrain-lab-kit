@@ -11,10 +11,6 @@ const path = require('path'),
   Promise = require('bluebird')
 
 const basepath = process.env.BASE_PATH,
-  quantize = typeof process.env.QUANTIZE_MS !== 'undefined',
-  quantPrecision = Math.max(parseInt(process.env.QUANTIZE_PRECISION || '-1'), -1),
-  precision = Math.pow(10.0, quantPrecision || -1),
-  quantizeMs = Math.max(parseFloat(process.env.QUANTIZE_MS || '125.0'), 125.0),
   filenames = fs.readdirSync(basepath),
   entries = {}
 
@@ -56,17 +52,17 @@ const frames = {},
   cof = new SelectNoteCOF(roots[index.root], index.octave)
 let count = 0
 for (let groupId in entries) {
+  if (!notes[groupId]) notes[groupId] = {}
   for (let ruleId in entries[groupId]) {
     const isBand = ruleId.indexOf('band_') === 0,
       sigIds = isBand ? ['abs'] : ['pos', 'neg']
     for (let sigId of sigIds) {
       if (entries[groupId][ruleId][sigId]) {
-        // if (typeof frames[groupId] !== 'object') frames[groupId] = {}
-        if (typeof notes[groupId] !== 'object') notes[groupId] = {}
         for (let paramId in entries[groupId][ruleId][sigId]) {
           const values = entries[groupId][ruleId][sigId][paramId].v
           let bandIndex = -1,
-            process = false
+            process = false,
+            msKey
           if (!Array.isArray(values)) throw new Error(`Broken entry for ${groupId}_${ruleId}_${sigId}_${paramId}`)
           if (isBand) {
             bandIndex = noteBands.indexOf(paramId)
@@ -76,29 +72,19 @@ for (let groupId in entries) {
             process = sigId === 'pos'
           }
           if (isBand && process) {
-            values.sort(util.sort.framesByTimeAsc)
-            let lastMs = null
+            values.sort(util.sort.framesByStringTimeAsc)
             for (let entry of values) {
-              const ms = Array.isArray(entry) && entry.length ? entry[0] : undefined
-              if (typeof ms === 'number') {
-                const msRound = precision ? Math.round(ms * precision) / precision : Math.round(ms),
-                  msQuant = msRound - (msRound % quantizeMs),
-                  msKey = quantize ? (quantPrecision > 0 ? msQuant.toFixed(quantPrecision) : Math.round(msQuant)) : ms.toFixed(3)
-                if (msKey !== lastMs) {
-                  if (lastMs) {
-                    // const frameStats = getFrameStats(frames[groupId][lastMs])
-                    // if (frameStats) stats[lastMs] = frameStats
-                  }
-                  count++
-                  if (count % 100000 === 0) console.log(`${count} entries processed`)
-                  if (!Array.isArray(frames[msKey])) {
-                    frames[msKey] = new Array(64).fill(null).map((v, i) => {
-                      return new Array(64).fill(0.0)
-                    })
-                  }
-                  notes[groupId][msKey] = []
-                  lastMs = msKey
+              msKey = entry[0]
+              if (typeof msKey === 'string') {
+                if (!Array.isArray(notes[groupId][msKey])) notes[groupId][msKey] = []
+                /*
+                if (!Array.isArray(frames[msKey])) {
+                  frames[msKey] = new Array(64).fill(null).map((v, i) => {
+                    return new Array(64).fill(0.0)
+                  })
                 }
+                */
+                /*
                 let ink = parseInt(Object.keys(entry[1])[0]) - 1
                 for (let row in frames[msKey]) {
                   if (ink === parseInt(row)) {
@@ -111,10 +97,13 @@ for (let groupId in entries) {
                     }
                   }
                 }
+                */
                 cof.position = bandIndex
                 const range = cof.range,
                   note = range.length > 0 ? range[range.length - 1] : undefined
                 if (bandIndex > -1 && note && notes[groupId][msKey].indexOf(note) === -1) notes[groupId][msKey].push(note)
+                count++
+                if (count % 100000 === 0) console.log(`${count} entries processed`)
               }
             }
           }
@@ -195,10 +184,10 @@ Promise.resolve()
     // return framesToGraph(frames, `${path.basename(process.env.BASE_PATH)}-frames`)
   })
   .then(() => {
-    return notesToGraph(notes, `${path.basename(process.env.BASE_PATH)}-notes`)
+    // return notesToGraph(notes, `${path.basename(process.env.BASE_PATH)}-notes`)
   })
   .then(() => {
-    return MIDI.notesToMidi(notes, 125.0, path.join(__dirname, '..', '..', 'midi', `${path.basename(process.env.BASE_PATH)}.mid`))
+    return MIDI.notesToMidi(notes, 120, path.join(__dirname, '..', '..', 'midi', `${path.basename(process.env.BASE_PATH)}.mid`))
   })
   .then(() => {
     console.log(`${count} entries processed`)
