@@ -49,10 +49,12 @@ Promise.map(lmdb.dbIds, function (id) {
   console.log(`MIN value ${valueRange.min}`.yellow)
   console.log(`MAX value ${valueRange.max}`.yellow)
 
-  const useRange = process.env.GLOBAL_RANGE || process.env.COMBINED_PLOT || process.env.SYMMETRIC
+  const useRange = process.env.GLOBAL_RANGE || process.env.COMBINED_PLOT || process.env.SYMMETRIC,
+    useLine = (process.env.USE_LINE),
+    useDot = (process.env.USE_DOT)
 
   function makePlot (data, i) {
-    const plotter = new LineChart(useRange ? valueRange : undefined)
+    const plotter = new LineChart(useRange ? valueRange : undefined, useLine, useDot)
     plotter.data = data
     let pad = i < 9 ? '0' : '',
       filename = path.basename(infile, path.extname(infile)),
