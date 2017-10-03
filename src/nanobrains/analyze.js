@@ -62,7 +62,8 @@ console.log('----------------------------------------')
 let stats = ''
 
 function storeRuleEntries (entries, basepath) {
-  return Promise.each(entries, entry => {
+  return Promise.each(Object.keys(entries), entryId => {
+    const entry = entries[entryId]
     let outLog = {}, entrySize = 0, timeRange
 
     for (let id in entry.commands[0].log) {
