@@ -22,7 +22,7 @@ class SpikeBands extends BaseRule {
         }
       }
     }
-    return Object.keys(this._result).length > 2 ? this._result : null
+    return Object.keys(this._result).length > 1 ? this._result : null
   }
 }
 
