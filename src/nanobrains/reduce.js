@@ -3,13 +3,16 @@ const path = require('path'),
   Big = require('big.js'),
   CLI = require('clui'),
   LMDB = require('../output').LMDB,
-  HDF5 = require('../output').HDF5,
+  // HDF5 = require('../output').HDF5,
   Stats = require('../util').Stats
 
 const infile = path.resolve(process.env.IN_FILE),
   outfile = path.resolve(process.env.OUT_FILE),
-  basename = path.basename(outfile, path.extname(outfile)),
+  // basename = path.basename(outfile, path.extname(outfile)),
+  statsThreshold = parseInt(process.env.STATS_THRESHOLD) || 100000,
+  flushThreshold = parseInt(process.env.FLUSH_THRESHOLD) || 1000,
   fps = process.env.FPS ? Big(process.env.FPS) : Big('100.0'),
+  interval = Big('1000.0').div(fps),
   debug = (process.env.DEBUG_MODE),
   spinner = new CLI.Spinner('Reducing...'),
   lmdb = new LMDB(),
@@ -18,34 +21,72 @@ const infile = path.resolve(process.env.IN_FILE),
 lmdb.openEnv(infile)
 lmdbOut.openEnv(outfile)
 
+const readCounter = function (count, stats, statsOut) {
+  count++
+  if (count % statsThreshold === 0) {
+    stats.print()
+    statsOut.print()
+  }
+  return count
+}
+
 for (let id of lmdb.dbIds) {
   process.stdout.write(`Opening DB ${id}...\n`.cyan)
   lmdb.openDb(id)
+  /*
   const hdf = HDF5.createFile(path.join(path.dirname(outfile), `${basename}.h5`)),
     hdfgroup = HDF5.createGroup(hdf, id)
   hdfgroup.title = basename
   hdfgroup.flush()
+  */
   const outId = lmdbOut.createDb(Object.assign({}, lmdb.meta[id]))
-  const txnRead = lmdb.beginTxn(true),
-    txnWrite = lmdbOut.beginTxn(),
-    interval = Big('1000.0').div(fps)
-  let table = false, running = true, max, millis = 0
+  const txnRead = lmdb.beginTxn(true)
+  let running = true,
+    // table = false,
+    max,
+    millis = Big('0'),
+    nextMillis = Big('0'),
+    count = 0,
+    txnWrite = lmdbOut.beginTxn()
   lmdb.initCursor(txnRead, id)
   if (!debug) {
     spinner.start()
   }
-
   const stats = new Stats(),
     statsOut = new Stats()
+  let key, data, entry
   while (running) {
-    let key, entry = lmdb.getCursorData(txnRead, id, true)
-    stats.addEntries()
-    if (millis === undefined) {
-      max = entry.data.clone()
-      millis = entry.key
+    entry = lmdb.getCursorData(txnRead, id, true)
+    if (entry.key && entry.data) {
+      stats.addEntries()
+      count = readCounter(count, stats, statsOut)
+      if (count % statsThreshold === 0) {
+        stats.print()
+        statsOut.print()
+      }
+      max = []
+      for (let v of entry.data) max.push(Big(v))
+      millis = nextMillis || entry.key
+      nextMillis = nextMillis.add(interval)
+      while (entry.key && entry.key.lt(nextMillis)) {
+        for (let i in entry.data) {
+          let v = Big(entry.data[i])
+          if (v.abs().gt(max[i].abs())) {
+            max[i] = v
+          }
+        }
+        lmdb.advanceCursor(id, false)
+        entry = lmdb.getCursorData(txnRead, id, true)
+        stats.addEntries()
+        count = readCounter(count, stats, statsOut)
+      }
+      max[0] = millis
       key = LMDB.stringKeyFromFloat(millis, lmdb.meta[id].key.length,
         lmdb.meta[id].key.precision, lmdb.meta[id].key.signed)
-      lmdbOut.put(txnWrite, outId, key, max)
+      data = Float64Array.from(max)
+      lmdbOut.put(txnWrite, outId, key, data)
+      statsOut.addEntries()
+      /*
       const records = lmdb.meta[id].labels.map((label, idx) => {
         const column = Float64Array.from([max[idx]])
         column.name = label
@@ -58,41 +99,17 @@ for (let id of lmdb.dbIds) {
         HDF5.makeTable(hdfgroup.id, id, records)
         table = true
       }
-      statsOut.addEntries()
-    }
-    max = entry.data
-    millis = entry.key
-    lmdb.advanceCursor(id)
-    entry = lmdb.getCursorData(txnRead, id, true)
-    while (entry.key.minus(millis).lt(interval) && entry.key.minus(millis).gte(Big('0.0'))) {
-      entry.data.forEach((val, i) => {
-        if (Array.isArray(max) && Math.abs(val) > Math.abs(max[i])) max[i] = val
-      })
-      lmdb.advanceCursor(id)
-      entry = lmdb.getCursorData(txnRead, id, true)
-      stats.addEntries()
-    }
-    if (entry.key.minus(millis).lt(Big('0.0'))) {
-      running = false
+      */
+      if (flushThreshold && statsOut.entries % flushThreshold === 0) {
+        process.stdout.write(`Flushing output at ${statsOut.entries} records\n`.yellow)
+        lmdbOut.endTxn(txnWrite)
+        txnWrite = lmdbOut.beginTxn()
+      }
+      running = (entry.key && entry.data)
+      lmdb.advanceCursor(id, false)
     }
     else {
-      key = LMDB.stringKeyFromFloat(millis, lmdb.meta[id].key.length,
-        lmdb.meta[id].key.precision, lmdb.meta[id].key.signed)
-      lmdbOut.put(txnWrite, outId, key, max)
-      const records = lmdb.meta[id].labels.map((label, idx) => {
-        const column = Float64Array.from([max[idx]])
-        column.name = label
-        return column
-      })
-      if (table) {
-        HDF5.appendRecords(hdfgroup.id, id, records)
-      }
-      else {
-        HDF5.makeTable(hdfgroup.id, id, records)
-        table = true
-      }
-      statsOut.addEntries()
-      lmdb.advanceCursor(id)
+      running = false
     }
   }
 
@@ -101,8 +118,8 @@ for (let id of lmdb.dbIds) {
   process.stdout.write('Closing...'.yellow)
   lmdbOut.endTxn(txnWrite)
   lmdbOut.close()
-  hdfgroup.close()
-  hdf.close()
+  // hdfgroup.close()
+  // hdf.close()
   lmdb.endTxn(txnRead, false)
   lmdb.close()
   process.stdout.write('Done.\n'.yellow)
