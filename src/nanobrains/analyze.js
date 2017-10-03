@@ -10,8 +10,8 @@ const path = require('path'),
 process.stdout.write('\n\nStarting data analysis...\n'.cyan)
 
 const matrixId = process.env.MATRIX_ID || 'v1',
-  bandRules = new LogBandFrames(util.ChannelMatrix[matrixId]),
-  syncRules = new LogSyncFrames(util.ChannelMatrix[matrixId]),
+  bandRules = new LogBandFrames(matrixId),
+  syncRules = new LogSyncFrames(matrixId),
   lmdb = new LMDB(),
   infile = path.resolve(process.env.IN_FILE),
   filename = path.basename(infile, path.extname(infile)),
@@ -26,26 +26,29 @@ for (let group of syncRules.grouping) {
   const key = syncRules.matrix ? syncRules.matrix._ID : undefined
 
   let band = {low: topMin, high: topMax}
-  bandRules.entries.push(LogBandFrames.makeBandRule(1, band, true, group, key))
+  bandRules.addEntry(LogBandFrames.makeBandRule(1, band, true, group, key))
   for (let b = start; b < start + iterations * step; b += step) {
     band = {low: b, high: b + step}
-    bandRules.entries.push(LogBandFrames.makeBandRule(1, band, true, group, key))
+    bandRules.addEntry(LogBandFrames.makeBandRule(1, band, true, group, key))
   }
 
-  syncRules.entries.push(LogSyncFrames.makeSyncRule(1, syncMin, false, group, key))
-  syncRules.entries.push(LogSyncFrames.makeSyncRule(1, syncMin * -1.0, false, group, key))
+  syncRules.addEntry(LogSyncFrames.makeSyncRule(1, syncMin, false, group, key))
+  syncRules.addEntry(LogSyncFrames.makeSyncRule(1, syncMin * -1.0, false, group, key))
 }
 
 lmdb.openEnv(infile)
 for (let id of lmdb.dbIds) {
   process.stdout.write(`Reading and processing from LMDB ${id}...`.yellow)
-  let txn, idx, data, entry
+  let txn, idx, entry
   lmdb.openDb(id)
   txn = lmdb.beginTxn(true)
   lmdb.initCursor(txn, id)
   while ((entry = lmdb.getCursorData(txn, id, false))) {
-    idx = entry.data[0]
-    data = entry.data.subarray(1)
+    idx = parseFloat(entry.key)
+    let data = [], sub = entry.data.subarray(1)
+    for (let i in sub) {
+      data.push(sub[i])
+    }
     bandRules.evaluate(data, idx)
     syncRules.evaluate(data, idx)
     lmdb.advanceCursor(id, false)
@@ -70,7 +73,7 @@ function storeRuleEntries (entries, basepath) {
         if (log.entries.length) log.entries.pop()
         if (log.entries.length) {
           entrySize += log.entries.length
-          timeRange = util.Stats.updateValueRange(log.entries[0][0], timeRange)
+          timeRange = util.Stats.updateValueRange(log.entries[0][0])
           timeRange = util.Stats.updateValueRange(log.entries[log.entries.length - 1][0], timeRange)
           outLog[id] = {entries: []}
           for (let e of log.entries) outLog[id].entries.push(e)
@@ -79,7 +82,8 @@ function storeRuleEntries (entries, basepath) {
     }
 
     if (entrySize && entry.commands.length > 0) {
-      let countstr = entry.commands[0].counts.sort(util.sort.primitveNumbersAsc).join(' '),
+      let countstr = Object.keys(entry.commands[0].counts).map(c => { return parseInt(c) })
+          .sort(util.sort.primitveNumbersAsc).join(' '),
         statsEntry = `${entry.id}\t${entrySize}\t` +
           `${entrySize ? timeRange.min : ''}\t${entrySize ? timeRange.max : ''}\t${countstr}\n`
       stats += statsEntry
