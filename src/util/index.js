@@ -1,5 +1,6 @@
 import ChannelMatrix from './channel-matrix'
 import HarmonicMatrix from './harmonic-matrix'
+import Harmonics from './harmonics'
 import Logger from './logger'
 import Stats from './stats'
 import Time from './time'
@@ -32,6 +33,7 @@ const getHSLFromRadians = (rad, alpha = 1.0, sat = 1.0, light = 0.5) =>
 export {
   ChannelMatrix,
   HarmonicMatrix,
+  Harmonics,
   Logger,
   Stats,
   Time,
