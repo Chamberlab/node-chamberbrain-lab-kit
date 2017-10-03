@@ -105,7 +105,7 @@ class LMDB {
     assert.notEqual(typeof txn, 'undefined', msgs.no_txn)
     assert.notEqual(typeof this._meta[dbId].cursor, 'undefined', msgs.no_cursor)
     if (!this._meta[dbId].cursor.key) {
-      return null
+      return {key: null, data: null}
     }
     const buffer = txn.getBinary(this._meta[dbId].dbi, this._meta[dbId].cursor.key)
     let data = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength)
@@ -188,6 +188,7 @@ class LMDB {
     return prefix + padString(fixed, length - prefix.length, '0', true)
   }
   static parseKey (key) {
+    if (key && key[0] === '+') key = key.substr(1)
     return Big(key)
   }
   static get TYPES () {
