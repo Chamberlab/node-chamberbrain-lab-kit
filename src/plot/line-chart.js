@@ -1,8 +1,12 @@
 import D3Node from 'd3-node'
 
 class LineChart {
-  constructor (rangeY = undefined, rangeX = undefined) {
+  constructor (rangeY = undefined, rangeX = undefined, showLine = true, showDots = false) {
     this._data = undefined
+    this._options = {
+      line: showLine,
+      dot: showDots
+    }
     this._range = {
       x: rangeX,
       y: rangeY
@@ -127,13 +131,24 @@ class LineChart {
       }
 
       for (let i = 0; i < _ctx.data.length; i++) {
-        g.append('path')
-          .datum(_ctx.data[i])
-          .style('opacity', _lineOpacity)
-          .attr('fill', 'none')
-          .attr('stroke', _lineColor)
-          .attr('stroke-width', _lineWidth)
-          .attr('d', lineChart)
+        if (_ctx._options.line) {
+          g.append('path')
+            .datum(_ctx.data[i])
+            .style('opacity', _lineOpacity)
+            .attr('fill', 'none')
+            .attr('stroke', _lineColor)
+            .attr('stroke-width', _lineWidth)
+            .attr('d', lineChart)
+        }
+
+        if (_ctx._options.dot) {
+          g.selectAll('.dot')
+            .data(_ctx.data[i])
+            .enter().append('circle')
+            .attr('cx', function (d) { return xScale(d.key) })
+            .attr('cy', function (d) { return yScale(d.value) })
+            .attr('r', 2)
+        }
       }
 
       resolve(d3n.svgString())
