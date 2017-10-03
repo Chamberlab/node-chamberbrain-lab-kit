@@ -44,6 +44,8 @@
     "fast-csv": "^2.4.0",
     "hdf5": "^0.3.3",
     "microtime": "^2.1.6",
+    "midievents": "^1.0.1",
+    "midifile": "^1.0.4",
     "moment": "^2.18.1",
     "nanotimer": "^0.3.15",
     "node-lmdb": "^0.4.13",
