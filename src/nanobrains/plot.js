@@ -1,6 +1,6 @@
 require('colors')
 const path = require('path'),
-  fs = require('fs'),
+  fs = require('mz/fs'),
   Promise = require('bluebird'),
   Logger = require('../util').Logger,
   LMDB = require('../output').LMDB,
@@ -64,7 +64,7 @@ Promise.map(lmdb.dbIds, function (id) {
     console.log(`Plot #${i + 1}: ${title}`)
     return plotter.makePlot(12000, 1080, 250, title)
       .then(chart => {
-        fs.writeFileSync(path.join(__dirname, '..', '..', 'plots',
+        return fs.writeFile(path.join(__dirname, '..', '..', 'plots',
           `${filename}-${symmetric}${scope}-${variant}.svg`), chart)
       })
   }
