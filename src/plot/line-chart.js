@@ -1,37 +1,34 @@
 import D3Node from 'd3-node'
+import BasePlot from './base'
 
-class LineChart {
-  constructor (rangeY = undefined, rangeX = undefined, showLine = true, showDots = false) {
-    this._data = undefined
-    this._options = {
-      line: showLine,
-      dot: showDots
-    }
-    this._range = {
-      x: rangeX,
-      y: rangeY
-    }
+class LineChart extends BasePlot {
+  constructor (range = { x: undefined, y: undefined }, line = true, dots = false) {
+    super({
+      doc: {
+        size: { w: 3000, h: 1080 },
+        margin: { top: 0, bottom: 0 },
+        padding: 100
+      },
+      line: {
+        show: line,
+        width: 1.0,
+        opacity: 1.0,
+        color: 'black',
+        curve: false
+      },
+      grid: {
+        show: line,
+        width: 1.0,
+        opacity: 1.0
+      },
+      dot: { show: dots, radius: 2 },
+      tick: { size: { x: 40, y: 100 }, padding: 5 },
+      range
+    })
   }
 
-  set data (val) {
-    this._data = val
-  }
-  get data () {
-    return this._data
-  }
-
-  makePlot (width, height, padding = 100, title = undefined) {
-    const _ctx = this,
-      _margin = { top: 0, right: 0, bottom: 0, left: 0 },
-      _lineWidth = 1.0,
-      _lineOpacity = 1.0,
-      _lineWidthGrid = 0.5,
-      _lineOpacityGrid = 0.3,
-      _tickSizeX = 40,
-      _tickSizeY = 100,
-      _tickPadding = 5,
-      _lineColor = 'black',
-      _isCurve = false
+  async makePlot (title = undefined) {
+    const _ctx = this
     return new Promise(function (resolve) {
       const d3n = new D3Node({
         selector: '#chart',
@@ -42,112 +39,74 @@ class LineChart {
           </div>
         `
       })
+      const d3 = d3n.d3,
+        _opts = _ctx._options,
+        _width = _opts.doc.size.w - _opts.doc.margin.left - _opts.doc.margin.right,
+        _height = _opts.doc.size.h - _opts.doc.margin.top - _opts.doc.margin.bottom,
+        _lineChart = d3.line().x(d => scale.x(d.key)).y(d => scale.y(d.value))
 
-      const d3 = d3n.d3
+      if (_opts.line.curve) _lineChart.curve(d3.curveBasis)
+      const svg = d3n.createSVG(_width + _opts.doc.padding * 2, _height + _opts.doc.padding * 2)
+        .append('g').attr('transform', `translate(${_opts.doc.margin.left + _opts.doc.padding}, ` +
+          `${_opts.doc.margin.top + _opts.doc.adding})`)
 
-      const _width = width - _margin.left - _margin.right
-      const _height = height - _margin.top - _margin.bottom
-
-      const svg = d3n.createSVG(width + padding * 2, height + padding * 2)
-        .append('g')
-        .attr('transform', `translate(${_margin.left + padding}, ${_margin.top + padding})`)
-
-      const g = svg.append('g')
-
-      const xScale = d3.scaleLinear()
-        .rangeRound([0, _width])
-      const yScale = d3.scaleLinear()
-        .rangeRound([_height, 0])
-      const xAxis = d3.axisBottom(xScale)
-        .tickSize(_tickSizeX)
-        .tickPadding(_tickPadding)
-      const yAxis = d3.axisLeft(yScale)
-        .tickSize(_tickSizeY)
-        .tickPadding(_tickPadding)
-
-      const lineChart = d3.line()
-        .x(d => xScale(d.key))
-        .y(d => yScale(d.value))
-
-      if (_isCurve) lineChart.curve(d3.curveBasis)
+      const g = svg.append('g'),
+        scale = { x: d3.scaleLinear().rangeRound([0, _width]), y: d3.scaleLinear().rangeRound([_height, 0]) },
+        axis = {
+          x: d3.axisBottom(scale.x).tickSize(_opts.tick.size.x).tickPadding(_opts.tick.padding),
+          y: d3.axisLeft(scale.y).tickSize(_opts.tick.size.y).tickPadding(_opts.tick.padding)
+        }
 
       let data = _ctx.data
-      if (data.length && Array.isArray(data[0])) {
-        data = data[0]
-      }
+      if (data.length && Array.isArray(data[0])) data = data[0]
+      const domainDataX = _opts.range.x ? [{key: _opts.range.x.min}, {key: _opts.range.x.max}] : data,
+        domainDataY = _opts.range.y ? [{value: _opts.range.y.min}, {value: _opts.range.y.max}] : data
 
-      const domainDataX = _ctx._range.x ? [{key: _ctx._range.x.min}, {key: _ctx._range.x.max}] : data,
-        domainDataY = _ctx._range.y ? [{value: _ctx._range.y.min}, {value: _ctx._range.y.max}] : data
-      xScale.domain(d3.extent(domainDataX, d => d.key))
-      yScale.domain(d3.extent(domainDataY, d => d.value))
+      scale.x.domain(d3.extent(domainDataX, d => d.key))
+      scale.y.domain(d3.extent(domainDataY, d => d.value))
 
-      function makeGridlinesX () {
-        return d3.axisBottom(xScale)
-          .ticks(_tickSizeX)
-      }
-
-      function makeGridlinesY () {
-        return d3.axisLeft(yScale)
-          .ticks(_tickSizeY)
-      }
+      function makeGridlinesX () { return d3.axisBottom(scale.x).ticks(_opts.tick.size.x) }
+      function makeGridlinesY () { return d3.axisLeft(scale.y).ticks(_opts.tick.size.y) }
 
       if (title) {
         g.append('text')
-          .style('font-family', 'Helvetica Neue')
-          .style('font-size', '72px')
-          .attr('x', 0)
-          .attr('y', padding * -0.5)
+          .style('font-family', 'Helvetica Neue').style('font-size', '72px')
+          .attr('x', 0).attr('y', _opts.tick.padding * -0.5)
           .text(title)
       }
-
       g.append('g')
-        .attr('stroke-width', _lineWidthGrid)
-        .style('opacity', _lineOpacityGrid)
-        .attr('transform', `translate(0, ${_height})`)
-        .call(makeGridlinesX()
-          .tickSize(-_height)
-          .tickFormat('')
-        )
-
+        .attr('stroke-width', _opts.grid.width)
+        .style('opacity', _opts.grid.opacity)
+        .attr('transform', `translate(0, ${_opts.doc.size.h})`)
+        .call(makeGridlinesX().tickSize(-_height).tickFormat(''))
       g.append('g')
         .attr('transform', `translate(0, ${_height})`)
         .style('font-size', '48px')
-        .call(xAxis)
-
+        .call(axis.x)
       g.append('g')
-        .attr('stroke-width', _lineWidthGrid)
-        .style('opacity', _lineOpacityGrid)
-        .call(makeGridlinesY()
-          .tickSize(-_width)
-          .tickFormat('')
-        )
+        .attr('stroke-width', _opts.grid.width)
+        .style('opacity', _opts.grid.opacity)
+        .call(makeGridlinesY().tickSize(-_width).tickFormat(''))
+      g.append('g').style('font-size', '48px').call(axis.y)
 
-      g.append('g')
-        .style('font-size', '48px')
-        .call(yAxis)
-
-      if (_ctx.data.length && !Array.isArray(_ctx.data[0])) {
-        _ctx.data = [_ctx.data]
-      }
-
+      if (_ctx.data.length && !Array.isArray(_ctx.data[0])) _ctx.data = [_ctx.data]
       for (let i = 0; i < _ctx.data.length; i++) {
-        if (_ctx._options.line) {
+        if (_ctx._options.line.show) {
           g.append('path')
             .datum(_ctx.data[i])
-            .style('opacity', _lineOpacity)
+            .style('opacity', _opts.line.opacity)
             .attr('fill', 'none')
-            .attr('stroke', _lineColor)
-            .attr('stroke-width', _lineWidth)
-            .attr('d', lineChart)
+            .attr('stroke', _opts.line.color)
+            .attr('stroke-width', _opts.line.width)
+            .attr('d', _lineChart)
         }
-
-        if (_ctx._options.dot) {
+        if (_ctx._options.dot.show) {
           g.selectAll('.dot')
             .data(_ctx.data[i])
             .enter().append('circle')
-            .attr('cx', function (d) { return xScale(d.key) })
-            .attr('cy', function (d) { return yScale(d.value) })
-            .attr('r', 2)
+            .attr('cx', function (d) { return scale.x(d.key) })
+            .attr('cy', function (d) { return scale.y(d.value) })
+            .attr('r', _opts.dot.radius)
         }
       }
 

@@ -1,19 +1,16 @@
 import D3Node from 'd3-node'
+import BasePlot from './base'
 import { getHSLFromRadians } from '../util'
 
-class Chord {
-  constructor () {
-    this._data = undefined
+class Chord extends BasePlot {
+  constructor (ringWidth = 30, padding = 0) {
+    super({
+      ringWidth,
+      padding
+    })
   }
 
-  set data (val) {
-    this._data = val
-  }
-  get data () {
-    return this._data
-  }
-
-  makePlot (width, height, ringWidth = 30, padding = 0) {
+  async makePlot (width, height) {
     const _ctx = this
     return new Promise(function (resolve) {
       const d3n = new D3Node({
@@ -28,16 +25,17 @@ class Chord {
 
       const d3 = d3n.d3,
         outerRadius = Math.min(width, height) * 0.5,
-        innerRadius = outerRadius - ringWidth,
+        innerRadius = outerRadius - _ctx._options.ringWidth,
         data = _ctx.data,
         chord = d3.chord().padAngle(0.05),
         arc = d3.arc().innerRadius(innerRadius).outerRadius(outerRadius),
         ribbon = d3.ribbon().radius(innerRadius),
-        svg = d3n.createSVG(width + padding * 2, height + padding * 2)
+        svg = d3n.createSVG(width + _ctx._options.padding * 2, height + _ctx._options.padding * 2)
 
       const g = svg.append('g')
         .style('background', 'black')
-        .attr('transform', `translate(${width * 0.5 + padding}, ${height * 0.5 + padding})`)
+        .attr('transform', `translate(${width * 0.5 + _ctx._options.padding},
+          ${height * 0.5 + _ctx._options.padding})`)
         .datum(chord(data))
 
       const group = g.append('g')

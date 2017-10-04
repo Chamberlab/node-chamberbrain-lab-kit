@@ -47,6 +47,7 @@
     "midievents": "^1.0.1",
     "midifile": "^1.0.4",
     "moment": "^2.18.1",
+    "mz": "^2.7.0",
     "nanotimer": "^0.3.15",
     "node-lmdb": "^0.4.13",
     "osc": "^2.2.0",
