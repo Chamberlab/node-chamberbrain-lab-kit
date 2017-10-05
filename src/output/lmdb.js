@@ -42,7 +42,7 @@ class LMDB {
       maxDbs: maxDbs
     })
   }
-  createDb (meta = {}) {
+  createDb (meta = {}, store = true) {
     assert.notEqual(typeof meta, 'undefined', msgs.bad_arg)
     const dbId = uuid4()
     this._meta[dbId] = { meta }
@@ -50,7 +50,7 @@ class LMDB {
       name: dbId,
       create: true
     })
-    this.storeMeta()
+    if (store) this.storeMeta()
     return dbId
   }
   openDb (dbId) {
