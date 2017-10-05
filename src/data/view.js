@@ -95,6 +95,9 @@ class View {
   toJSON () {
     return JSON.stringify(this._config, null, '\t')
   }
+  toString () {
+    return this.toJSON()
+  }
 
   _hasStorage () {
     return (this._basepath && this._config.storage)

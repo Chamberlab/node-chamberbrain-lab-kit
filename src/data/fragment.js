@@ -75,6 +75,13 @@ class Fragment extends TinyEmitter {
     return this._value ? this._value.data.byteLength : 0
   }
 
+  toJSON () {
+    return JSON.stringify(this._config, null, '\t')
+  }
+  toString () {
+    return this.toJSON()
+  }
+
   init (config) {
     assert(config.type >= 0, DataError.messages[DataError.types.INVALID_TYPE])
     switch (config.type) {

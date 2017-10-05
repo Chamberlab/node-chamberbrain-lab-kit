@@ -47,7 +47,7 @@ Promise.resolve().then(() => {
     _id = id
     return Package.save(basepath, pkg)
       .then(() => {
-        console.log(pkg)
+        console.log(pkg.toJSON())
       })
   })
 }).then(() => {
@@ -56,9 +56,7 @@ Promise.resolve().then(() => {
       return pkg.getViewById(_id)
         .then(view => {
           view.open()
-        })
-        .then(pkg => {
-          console.log(pkg)
+          console.log(view.toJSON())
         })
     })
 })

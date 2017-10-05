@@ -62,6 +62,9 @@ class Package {
     conf.views = conf.views.map(view => { return view._config.id })
     return JSON.stringify(conf, null, '\t')
   }
+  toString () {
+    return this.toJSON()
+  }
 
   close () {
     return Promise.each(this.views, view => view.close())
