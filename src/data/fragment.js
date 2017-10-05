@@ -14,18 +14,9 @@ class Fragment extends TinyEmitter {
 
     this._time = undefined
     this._value = undefined
-    this._key = undefined
     this._config = undefined
 
-    this.init(Object.assign({
-      type: undefined,
-      shape: undefined,
-      key: {
-        length: 16,
-        precision: 6,
-        signed: true
-      }
-    }, config))
+    this.init(Object.assign({}, config))
   }
 
   update (value, time = undefined, copy = false) {
@@ -33,12 +24,6 @@ class Fragment extends TinyEmitter {
     this._key = Fragment.getKeyFromDouble(microtime.nowDouble())
 
     switch (this._config.type) {
-      case DataTypes.TYPE_FLOAT64_ARRAY:
-        if (value instanceof Float64Array) {
-          assert.equal(value.length, this._value.length)
-          this._value = copy ? Fragment.copyBuffer(value) : value
-        }
-        break
       case DataTypes.TYPE_FLOAT64_MATRIX:
         if (value instanceof ArrayBuffer) {
           assert.equal(value.length, this._value.data.length)
@@ -62,6 +47,12 @@ class Fragment extends TinyEmitter {
           this._value.data = copy ? Fragment.copyBuffer(value.data) : value.data
         }
         break
+      case DataTypes.TYPE_FLOAT64_ARRAY:
+        if (value instanceof Float64Array) {
+          assert.equal(value.length, this._value.length)
+          this._value = copy ? Fragment.copyBuffer(value) : value
+        }
+        break
       default:
         throw new DataError(DataError.types.INVALID_TYPE)
     }
@@ -80,20 +71,23 @@ class Fragment extends TinyEmitter {
   get value () {
     return this._value
   }
+  get bytes () {
+    return this._value ? this._value.data.byteLength : 0
+  }
 
   init (config) {
     assert(config.type >= 0, DataError.messages[DataError.types.INVALID_TYPE])
     switch (config.type) {
-      case DataTypes.TYPE_FLOAT64_ARRAY:
-        assert(typeof config.shape === 'number', DataError.messages[DataError.types.BAD_PARAMS])
-        this._value = new Float64Array(config.shape)
-        break
       case DataTypes.TYPE_FLOAT64_MATRIX:
         assert(Array.isArray(config.shape), DataError.messages[DataError.types.BAD_PARAMS])
         this._value = new vectorious.Matrix(config.shape)
         break
       case DataTypes.TYPE_FLOAT64_VECTOR:
         this._value = new vectorious.Vector()
+        break
+      case DataTypes.TYPE_FLOAT64_ARRAY:
+        assert(typeof config.shape === 'number', DataError.messages[DataError.types.BAD_PARAMS])
+        this._value = new Float64Array(config.shape)
         break
       default:
         throw new DataError(DataError.types.INVALID_TYPE)
@@ -109,9 +103,7 @@ class Fragment extends TinyEmitter {
   static getKeyFromDouble (value, length = 16, precision = 6, signed = true) {
     const fixed = Big(Math.abs(value)).toFixed(precision)
     let prefix = ''
-    if (signed) {
-      prefix = Math.sign(value) > 0 ? '+' : '-'
-    }
+    if (signed) prefix = Math.sign(value) > 0 ? '+' : '-'
     return prefix + padString(fixed, length - prefix.length, '0', true)
   }
   static keyToDouble (key) {
