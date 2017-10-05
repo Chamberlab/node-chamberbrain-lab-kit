@@ -1,6 +1,6 @@
 require('colors')
 const path = require('path'),
-  fs = require('fs'),
+  fs = require('mz/fs'),
   Promise = require('bluebird'),
   util = require('../util'),
   LogBandFrames = require('../rulesets').LogBandFrames,
@@ -24,8 +24,8 @@ const matrixId = process.env.MATRIX_ID || 'v1',
 
 for (let group of syncRules.grouping) {
   const key = syncRules.matrix ? syncRules.matrix._ID : undefined
-
   let band = {low: topMin, high: topMax}
+
   bandRules.addEntry(LogBandFrames.makeBandRule(1, band, true, group, key))
   for (let b = start; b < start + iterations * step; b += step) {
     band = {low: b, high: b + step}
@@ -66,8 +66,6 @@ function storeRuleEntries (entries, basepath) {
       const log = entry.commands[0].log[id]
       if (Array.isArray(log.entries)) {
         log.entries.sort(util.sort.framesByTimeAsc)
-        // FIXME: this hack for my b0rked lmdb import needs to go!
-        if (log.entries.length) log.entries.pop()
         if (log.entries.length) {
           entrySize += log.entries.length
           timeRange = util.Stats.updateValueRange(log.entries[0][0])
@@ -79,13 +77,14 @@ function storeRuleEntries (entries, basepath) {
     }
 
     if (entrySize && entry.commands.length > 0) {
-      let countstr = Object.keys(entry.commands[0].counts).map(c => { return parseInt(c) })
+      let countstr = Object.keys(entry.commands[0].counts)
+          .map(c => { return parseInt(c) })
           .sort(util.sort.primitveNumbersAsc).join(' '),
         statsEntry = `${entry.id}\t${entrySize}\t` +
           `${entrySize ? timeRange.min : ''}\t${entrySize ? timeRange.max : ''}\t${countstr}\n`
       stats += statsEntry
       process.stdout.write(statsEntry)
-      return Promise.promisify(fs.writeFile)(path.join(basepath, `${entry.id}.json`), JSON.stringify(outLog))
+      return fs.writeFile(path.join(basepath, `${entry.id}.json`), JSON.stringify(outLog))
     }
   })
 }
@@ -96,21 +95,11 @@ const basename = `${filename}-${iterations}-${start.toFixed(3)}-${step.toFixed(3
 Promise.resolve()
   .then(() => {
     process.stdout.write(`Storing results at ${basepath}...`.yellow)
-    return Promise.promisify(fs.mkdir)(basepath).catch(err => { if (err.code !== 'EEXIST') throw err })
+    return fs.mkdir(basepath).catch(err => { if (err.code !== 'EEXIST') throw err })
   })
   .then(() => { return storeRuleEntries(syncRules.entries, basepath) })
   .then(() => { return storeRuleEntries(bandRules.entries, basepath) })
-  .then(() => {
-    return new Promise((resolve, reject) => {
-      fs.writeFileSync(path.join(basepath, `${basename}-stats.csv`), stats, (err) => {
-        if (err) reject(err)
-        else {
-          process.stdout.write(`done.\n`.yellow)
-          resolve()
-        }
-      })
-    })
-  })
+  .then(() => { return fs.writeFile(path.join(basepath, `${basename}-stats.csv`), stats) })
   .then(() => {
     process.stderr.write('\nAnalysis complete, exiting.\n\n'.cyan)
     process.exit(0)

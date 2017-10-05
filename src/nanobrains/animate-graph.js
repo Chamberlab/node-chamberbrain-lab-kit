@@ -6,11 +6,11 @@ const path = require('path'),
   LMDB = require('../output').LMDB,
   Chord = require('../plot').Chord,
   ChannelMatrix = require('../util').ChannelMatrix,
-  LogSyncFrames = require('../rulesets').LogSyncFrames,
-  matrixId = process.env.MATRIX_ID || 'v1',
-  syncRules = new LogSyncFrames(ChannelMatrix[matrixId])
+  LogSyncFrames = require('../rulesets').LogSyncFrames
 
 const lmdb = new LMDB(),
+  matrixId = process.env.MATRIX_ID || 'v1',
+  syncRules = new LogSyncFrames(ChannelMatrix[matrixId]),
   infile = path.resolve(process.env.IN_FILE),
   filename = path.basename(infile, path.extname(infile))
 
@@ -40,8 +40,6 @@ Promise.map(lmdb.dbIds, function (id) {
     while (entry) {
       for (let group of syncRules.grouping) {
         const key = syncRules.matrix ? syncRules.matrix._ID : undefined
-        let band
-
       }
       fnum = yield makePlot(entry.data[0], fnum, entry.data.slice(1))
       lmdb.advanceCursor(id, false)

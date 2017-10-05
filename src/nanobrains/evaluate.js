@@ -56,9 +56,11 @@ for (let groupId in entries) {
   for (let ruleId in entries[groupId]) {
     const isBand = ruleId.indexOf('band_') === 0,
       sigIds = isBand ? ['abs'] : ['pos', 'neg']
-    for (let sigId of sigIds) {
-      if (entries[groupId][ruleId][sigId]) {
-        for (let paramId in entries[groupId][ruleId][sigId]) {
+
+    sigIds
+      .filter(sigId => { return (entries[groupId][ruleId][sigId]) })
+      .forEach(sigId => {
+        Object.keys(entries[groupId][ruleId][sigId]).forEach(paramId => {
           const values = entries[groupId][ruleId][sigId][paramId].v
           let bandIndex = -1,
             process = false,
@@ -68,48 +70,10 @@ for (let groupId in entries) {
             bandIndex = noteBands.indexOf(paramId)
             process = (bandIndex > -1)
           }
-          else {
-            process = sigId === 'pos'
-          }
-          if (isBand && process) {
-            values.sort(util.sort.framesByStringTimeAsc)
-            for (let entry of values) {
-              msKey = entry[0]
-              if (typeof msKey === 'string') {
-                if (!Array.isArray(notes[groupId][msKey])) notes[groupId][msKey] = []
-                /*
-                if (!Array.isArray(frames[msKey])) {
-                  frames[msKey] = new Array(64).fill(null).map((v, i) => {
-                    return new Array(64).fill(0.0)
-                  })
-                }
-                */
-                /*
-                let ink = parseInt(Object.keys(entry[1])[0]) - 1
-                for (let row in frames[msKey]) {
-                  if (ink === parseInt(row)) {
-                    for (let n of Object.keys(entry[1]).slice(1)) {
-                      const ni = parseInt(n) - 1
-                      if (typeof n === 'string' && n[0] !== '_') {
-                        const nv = entry[1][n]
-                        frames[msKey][parseInt(row)][ni] = nv
-                      }
-                    }
-                  }
-                }
-                */
-                cof.position = bandIndex
-                const range = cof.range,
-                  note = range.length > 0 ? range[range.length - 1] : undefined
-                if (bandIndex > -1 && note && notes[groupId][msKey].indexOf(note) === -1) notes[groupId][msKey].push(note)
-                count++
-                if (count % 100000 === 0) console.log(`${count} entries processed`)
-              }
-            }
-          }
-        }
-      }
-    }
+          else process = sigId === 'pos'
+          if (isBand && process) return
+        })
+      })
   }
 }
 
@@ -134,9 +98,7 @@ function makeScatterPlot (data, filename) {
   const plotter = new LineChart({min: 0, max: 128}, undefined, false, true)
   plotter.data = data
   return plotter.makePlot(1920, 600)
-    .then(svg => {
-      return Promise.promisify(fs.writeFile)(`${filename}.svg`, svg)
-    })
+    .then(svg => { return Promise.promisify(fs.writeFile)(`${filename}.svg`, svg) })
 }
 function notesToGraph (notes, filename) {
   let groups = Object.keys(notes),
@@ -184,7 +146,7 @@ Promise.resolve()
     // return framesToGraph(frames, `${path.basename(process.env.BASE_PATH)}-frames`)
   })
   .then(() => {
-    // return notesToGraph(notes, `${path.basename(process.env.BASE_PATH)}-notes`)
+    return notesToGraph(notes, `${path.basename(process.env.BASE_PATH)}-notes`)
   })
   .then(() => {
     return MIDI.notesToMidi(notes, 120, path.join(__dirname, '..', '..', 'midi', `${path.basename(process.env.BASE_PATH)}.mid`))
