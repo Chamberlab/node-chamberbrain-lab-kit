@@ -13,6 +13,12 @@ const MIDI = require('../input').MIDI,
   useScaleBuffer = (process.env.SCALE_BUFFER),
   scaleBufferSize = parseInt(process.env.SCALE_BUFFER_SIZE)
 
+const lmdb = new LMDB(),
+  dbfile = path.basename(infile, path.extname(infile)) + '-harmonic_log'
+lmdb.openEnv(path.join(__dirname, '..', '..', 'midi', dbfile), 4, 1)
+const uuid = lmdb.createDb({ infile })
+const txn = lmdb.beginTxn()
+
 MIDI.readFile(path.resolve(infile)).then(result => {
   const flattened = []
   return Promise.each(result.tracks, track => {
@@ -37,6 +43,14 @@ MIDI.readFile(path.resolve(infile)).then(result => {
     Object.keys(track).sort().forEach(key => {
       const count = track[key].length
       if (counts.indexOf(count) === -1) counts.push(count)
+      if (count) {
+        const cont = track[key].map(nt => {
+          return `${nt.value.toString()}x${nt.duration.toString()}`
+        }).join(',')
+        const nte = `cmd:NOTE|arr:${cont}`
+        lmdb.put(txn, uuid, key, Buffer.from(nte, 'utf8'))
+        process.stdout.write(`T${key}ms\t${nte}\n`)
+      }
       if (count > 1) {
         const notes = track[key].map(te => { return te.value.toString() })
         if (scaleBuffer) {
@@ -59,7 +73,14 @@ MIDI.readFile(path.resolve(infile)).then(result => {
             typeof scaleRank[scale.type] === 'number' ? scaleRank[scale.type]++ : scaleRank[scale.type] = 1
             if (sc !== currentScale) {
               currentScale = sc
-              log.push(`T${key}ms\tSCLE\t${sc}\n`)
+              let ind = -1
+              modes.forEach(m => {
+                let id = scale.type.indexOf(m)
+                if (id > -1) ind = id
+              })
+              const degr = `cmd:MODE|mde:${sc}x${ind}`
+              lmdb.put(txn, uuid, key, Buffer.from(degr, 'utf8'))
+              log.push(`T${key}ms\t${degr}\n`)
             }
           })
           if (scaleBuffer) scaleBuffer = []
@@ -74,6 +95,7 @@ MIDI.readFile(path.resolve(infile)).then(result => {
             tokens = null
           chord.forEach(fchrd => {
             fchrd = tonal.chord.parse(fchrd)
+            let n = 0
             for (let deg in chordMap) {
               for (let chrd of chordMap[deg]) {
                 if (!found) {
@@ -82,15 +104,20 @@ MIDI.readFile(path.resolve(infile)).then(result => {
                     found = fchrd
                     if (currentDegree !== deg) {
                       currentDegree = deg
-                      log.push(`T${key}ms\tDEGR\t${currentDegree}\n`)
+                      const degr = `cmd:DEGR|deg:${currentDegree}x${n}`
+                      lmdb.put(txn, uuid, key, Buffer.from(degr, 'utf8'))
+                      log.push(`T${key}\tms${degr}\n`)
                     }
                   }
                 }
               }
+              n++
             }
           })
           if (found) {
-            log.push(`T${key}ms\tCHRD\t${found.tonic || ''}${found.type || ''}\n`)
+            const chrd = `cmd:CHRD|tonic:${found.tonic || ''}|type:${found.type || ''}`
+            lmdb.put(txn, uuid, key, Buffer.from(chrd, 'utf8'))
+            log.push(`T${key}ms\t${chrd}\n`)
           }
         }
       }
@@ -106,6 +133,10 @@ MIDI.readFile(path.resolve(infile)).then(result => {
   })
   const logText = log.join('') + '\n\n'
   process.stdout.write(logText)
+
+  lmdb.endTxn(txn)
+  lmdb.close()
+
   const outfile = path.join(__dirname, '..', '..', 'logs',
     `${path.basename(infile, path.extname(infile))}-midi-resurrected.txt`)
   return Promise.promisify(fs.writeFile)(outfile, logText)
