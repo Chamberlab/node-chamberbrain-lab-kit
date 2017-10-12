@@ -101,14 +101,25 @@ class LMDB {
     this._meta[dbId].cursor.key = this._meta[dbId].cursor.nextKey
     this._meta[dbId].cursor.nextKey = this._meta[dbId].cursor.obj.goToNext()
   }
-  getCursorData (txn, dbId, parseKey = false) {
+  getCursorRaw (txn, dbId) {
     assert.notEqual(typeof txn, 'undefined', msgs.no_txn)
     assert.notEqual(typeof this._meta[dbId].cursor, 'undefined', msgs.no_cursor)
     if (!this._meta[dbId].cursor.key) {
       return null
     }
-    const buffer = txn.getBinary(this._meta[dbId].dbi, this._meta[dbId].cursor.key)
-    let data = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength)
+    return {
+      key: this._meta[dbId].cursor.key,
+      buffer: txn.getBinary(this._meta[dbId].dbi, this._meta[dbId].cursor.key)
+    }
+  }
+  getCursorData (txn, dbId, parseKey = false) {
+    assert.notEqual(typeof txn, 'undefined', msgs.no_txn)
+    assert.notEqual(typeof this._meta[dbId].cursor, 'undefined', msgs.no_cursor)
+    const res = this.getCursorRaw(txn, dbId)
+    if (!res) {
+      return null
+    }
+    let data = res.buffer.slice(res.buffer.byteOffset, res.buffer.byteOffset + res.buffer.byteLength)
     switch (this._meta[dbId].meta.type) {
       case LMDB.TYPES.FLOAT32:
         data = new Float32Array(data, data.byteOffset, data.byteLength / Float32Array.BYTES_PER_ELEMENT)
