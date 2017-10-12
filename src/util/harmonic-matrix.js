@@ -1,6 +1,6 @@
 const syncMap = [0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6]
 const noteBands = ['0.010x0.015', '0.015x0.020', '0.020x0.025', '0.025x0.030', '0.030x0.035', '0.035x0.040', '0.040x0.045']
-const roots = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+const roots = ['C', 'Cb', 'D', 'Db', 'E', 'F', 'Fb', 'G', 'Gb', 'A', 'A#', 'B']
 const degrees = ['IV', 'I', 'V', 'II', 'VI', 'III', 'VII']
 const modes = ['lydian', 'ionian', 'mixolydian', 'dorian', 'aeolian', 'phrygian', 'locrian']
 const chordMap = {
